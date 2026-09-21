@@ -333,7 +333,7 @@ class PlottingMixin:
         """(x, density) for every inferred parameter, in vector order.
 
         material -> uniform; sigma_noise/sigma_bias -> exponential;
-        l_bias -> PC (range) or uniform; c_bias -> Normal(0, sd).
+        l_bias -> uniform; c_bias -> Normal(0, sd).
         """
         curves = []
         for lo, hi in self._get_parameter_bounds():                 # material params
@@ -343,16 +343,10 @@ class PlottingMixin:
         for rate in rates:                                          # sigma_noise (+ sigma_bias): exponential
             x = np.linspace(0, 5.0 / rate, n)
             curves.append((x, rate * np.exp(-rate * x)))
-        if self._infer_l_bias():
-            if self.l_bias_prior == "uniform":                       # l_bias: Uniform(lo, hi)
-                lo_l, hi_l = self.l_bias_bounds
-                x = np.linspace(lo_l, hi_l, n)
-                curves.append((x, np.full_like(x, 1.0 / (hi_l - lo_l))))
-            else:                                                     # l_bias: PC prior (range, 1-D)
-                lam = self.l_bias_pc_lambda
-                mode = (lam / 3.0) ** 2              # anchor the view on the mode (tail is heavy)
-                x = np.linspace(max(mode / 20, 1e-3), 15 * mode, n)
-                curves.append((x, 0.5 * lam * x ** -1.5 * np.exp(-lam * x ** -0.5)))
+        if self._infer_l_bias():                                     # l_bias: Uniform(lo, hi)
+            lo_l, hi_l = self.l_bias_bounds
+            x = np.linspace(lo_l, hi_l, n)
+            curves.append((x, np.full_like(x, 1.0 / (hi_l - lo_l))))
         if self._infer_mean_bias():                                # c_bias: Normal(0, sd)
             sd = self.c_bias_prior_sd
             x = np.linspace(-4 * sd, 4 * sd, n)
@@ -361,7 +355,7 @@ class PlottingMixin:
 
     def _prior_pdf_list(self):
         """Vectorized prior pdf callables in posterior-column order: material (uniform),
-        sigma_noise (+ sigma_bias) exponential, l_bias uniform/PC, c_bias Normal(0, sd).
+        sigma_noise (+ sigma_bias) exponential, l_bias uniform, c_bias Normal(0, sd).
         Aligned with ``_get_parameter_labels`` / the sample columns, one per inferred dim."""
         def uniform(lo, hi):
             return lambda x: np.where((x >= lo) & (x <= hi), 1.0 / (hi - lo), 0.0)
@@ -371,14 +365,8 @@ class PlottingMixin:
         pdfs.append(expon(float(self.sigma_noise_prior)))              # sigma_noise
         if self._infer_sigma_bias():
             pdfs.append(expon(float(self.sigma_bias_prior)))           # sigma_bias
-        if self._infer_l_bias():
-            if self.l_bias_prior == "uniform":
-                pdfs.append(uniform(*map(float, self.l_bias_bounds)))
-            else:                                                      # PC prior (range, 1-D)
-                lam = float(self.l_bias_pc_lambda)
-                pdfs.append(lambda x: np.where(
-                    x > 0, 0.5 * lam * np.clip(x, 1e-12, None) ** -1.5
-                    * np.exp(-lam * np.clip(x, 1e-12, None) ** -0.5), 0.0))
+        if self._infer_l_bias():                                       # l_bias: Uniform(lo, hi)
+            pdfs.append(uniform(*map(float, self.l_bias_bounds)))
         if self._infer_mean_bias():                                    # c_bias: Normal(0, sd)
             sd = float(self.c_bias_prior_sd)
             pdfs.append(lambda x: np.exp(-0.5 * (x / sd) ** 2) / (sd * np.sqrt(2 * np.pi)))
@@ -397,6 +385,56 @@ class PlottingMixin:
         axes[0].set_ylabel("Prior density")
         self._save_current_figure("prior")
         plt.show()
+
+    def plot_bias_realizations(self, n_real: int = 20, l_bias=None, sigma: float = 1.0,
+                               n_grid: int = 400, x_max: float = 5.0, band: float = 2.0,
+                               save: bool = True):
+        """Draw and plot ``n_real`` realizations of the discrepancy GP prior delta(x).
+
+        Uses the same ``_bias_correlation_matrix`` as the likelihood, so when
+        ``constrained_model_error=True`` the constraints delta(0)=0 and delta'(x)=0 on
+        ``self.bias_gradient_points`` are enforced exactly. ``sigma`` is the marginal SD
+        of delta (sigma_bias); ``l_bias`` defaults to the model's length scale (the fixed
+        value, else ``l_bias_est``, else 1.0). Shaded band is +/- ``band``*sigma(x)."""
+        if l_bias is None:
+            l_bias = (float(self.l_bias) if isinstance(self.l_bias, (int, float))
+                      else float(getattr(self, "l_bias_est", 0.5) or 0.5))
+        obs = getattr(self, "obs_x_coords", None)
+        hi = float(np.max(obs)) if obs is not None else float(x_max)
+        xg = np.linspace(0.0, hi, n_grid)
+        K = float(sigma) ** 2 * self._bias_correlation_matrix(xg, l_bias)
+        K = 0.5 * (K + K.T)
+        w, V = np.linalg.eigh(K)
+        L = V * np.sqrt(np.clip(w, 0.0, None))
+        rng = np.random.default_rng(getattr(self, "seed", 42))
+        samples = rng.standard_normal((int(n_real), len(xg))) @ L.T
+        std = np.sqrt(np.clip(np.diag(K), 0.0, None))
+
+        fig, ax = plt.subplots(figsize=(9, 6))
+        ax.fill_between(xg, -band * std, band * std, color="0.85", lw=0,
+                        label=fr"$\pm{band:g}\sigma(x)$")
+        for s in samples:
+            ax.plot(xg, s, color="tab:blue", lw=0.8, alpha=0.5)
+        ax.axhline(0.0, color="0.4", lw=0.6)
+        constrained = getattr(self, "constrained_gradient", False)
+        if getattr(self, "bias_anchor", None) is not None:
+            ax.plot(float(self.bias_anchor), 0.0, "ko", ms=6, label=r"$\delta(0)=0$")
+        if constrained:
+            dp = np.asarray(self.bias_gradient_points, float)
+            ax.axvspan(dp[0], dp[-1], color="tab:red", alpha=0.10, lw=0, label=r"$\delta'(x)=0$")
+        title = ("constrained" if (constrained or self.bias_anchor is not None) else "prior")
+        ax.set(xlabel=r"$x$", ylabel=r"$\delta(x)$", xlim=(0.0, hi),
+               title=fr"{int(n_real)} draws of the {title} discrepancy GP "
+                     fr"($\ell_{{bias}}={l_bias:.3g}$, $\sigma_{{bias}}={sigma:g}$)")
+        ax.grid(True, alpha=0.3); ax.legend(loc="upper right", fontsize=10)
+        fig.tight_layout()
+        if save:
+            try:
+                self._save_current_figure("bias_realizations")
+            except Exception:
+                pass
+        plt.show()
+        return xg, samples
 
     def plot_trace_all(self, burn_in_ratio: float = 0.6) -> None:
         if getattr(self, "chain", None) is None:
@@ -510,15 +548,16 @@ class PlottingMixin:
         self.plot_corner(**kwargs)
 
     def _bias_correlation_matrix(self, x, l_bias) -> np.ndarray:
-        """Discrepancy correlation (squared-exponential or Matern nu=1/2, per
-        ``self.correlation_matrix``), optionally GP-conditioned on linear
-        constraints (Brynjarsdottir & O'Hagan 2014; derivatives of a GP are
+        """Discrepancy correlation (squared-exponential, Matern nu=1/2, or absolute
+        exponential, per ``self.correlation_matrix``), optionally GP-conditioned on
+        linear constraints (Brynjarsdottir & O'Hagan 2014; derivatives of a GP are
         jointly Gaussian):
 
         * ``bias_anchor=True`` -> delta(0)=0     (die-exit value constraint)
-        * ``constrained_gradient=True`` -> delta'(5)=0 at this single point;
-          squared-exponential only, since the
-          Matern (nu=1/2, exponential) kernel is not mean-square differentiable.
+        * ``constrained_gradient=True`` -> delta'(x)=0 at ``self.bias_gradient_points``
+          (10 evenly-spaced points on [3.5, 5] by default); squared-exponential only,
+          since the absolute-exponential kernels ('matern' nu=1/2, 'absolute') are not
+          mean-square differentiable.
 
         Returns ``K' = K - C A^{-1} C^T`` (PSD; zero variance along the constraints),
         with ``C``/``A`` the value/derivative cross- and auto-covariances of the
@@ -526,11 +565,14 @@ class PlottingMixin:
         """
         x = np.asarray(x, dtype=float).ravel()
         l2 = float(l_bias) ** 2
-        matern = getattr(self, "correlation_matrix", "squared_exp") == "matern"
-        if matern:
+        kind = getattr(self, "correlation_matrix", "squared")
+        if kind == "matern":
             # Matern, nu=1/2: c(r) = exp(-sqrt(8*0.5) r / l) = exp(-2r/l) (Fuglstad et al. 2019,
-            # Definition 2.3), the same "range" convention used to derive the PC prior on l_bias.
+            # Definition 2.3), the "range" convention.
             kf = lambda a, b: np.exp(-2.0 * np.abs(np.subtract.outer(a, b)) / l_bias)
+        elif kind == "absolute":
+            # Absolute exponential: c(r) = exp(-|r|/l)  (correlation = e^-1 at r = l).
+            kf = lambda a, b: np.exp(-np.abs(np.subtract.outer(a, b)) / l_bias)
         else:
             kf = lambda a, b: np.exp(-np.subtract.outer(a, b) ** 2 / (2.0 * l2))
         K = kf(x, x)
@@ -539,9 +581,11 @@ class PlottingMixin:
         if getattr(self, "bias_anchor", None) is not None:
             Vc = [float(self.bias_anchor)]                                   # delta(x0)=0
         if getattr(self, "constrained_gradient", False):
-            if matern:
-                raise RuntimeError("constrained_gradient requires the squared_exp correlation matrix.")
-            Dc = [5.0]  # delta'(5)=0 only
+            if kind != "squared":
+                raise RuntimeError("constrained_gradient requires correlation_matrix='squared' "
+                                   "(the derivative covariances used here are squared-exponential).")
+            Dc = np.asarray(getattr(self, "bias_gradient_points",
+                                    np.linspace(3.5, 5.0, 10)), float)  # delta'(x)=0 on [3.5,5]
         if not Vc and not Dc:
             return K
         Vc, Dc = np.asarray(Vc, float), np.asarray(Dc, float)
@@ -564,7 +608,11 @@ class PlottingMixin:
             gVD = np.subtract.outer(Vc, Dc) / l2 * kf(Vc, Dc)               # Cov(d(Vc), d'(Dc))
             A[:nv, nv:], A[nv:, :nv] = gVD, gVD.T
         A[np.diag_indices_from(A)] += 1e-10
-        return K - C @ np.linalg.solve(A, C.T)
+        # Least-squares (pseudo-inverse) solve: robust if A is near-singular; symmetrize
+        # to remove floating-point asymmetry.
+        sol = np.linalg.lstsq(A, C.T, rcond=None)[0]
+        Kc = K - C @ sol
+        return 0.5 * (Kc + Kc.T)
 
     @staticmethod
     def _correlated_normal(rng, corr, sigma) -> np.ndarray:

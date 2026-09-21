@@ -1,0 +1,21 @@
+=== Bayesian inference results ===
+observation      : C:\Users\paraj\Documents\bayesian_die_swell-main\datas\oldroyd-rom3\beta-0.5\alpha-0.2\wi-1
+model            : oldroyd   mode: full_curve   U_avg: 0.1
+points           : 124 (thin=1)   x range: [0, 4.991]
+x_max            : 5
+kernel           : squared_exp   bias_anchor: True   bias_flat: (3.0, 5.0)
+noise            : 2% of displacement
+sigma_bias prior : Exp(mean=0.00161204)  (RMS of model bias)
+l_bias prior     : LogUniform(0.2234, 1.461)
+MLE fit          : lambda=1.74529, beta=0.88375, eta_0=1.25871
+
+Parameter                Mean           Std      Rhat      95% CI Low     95% CI High
+lambda           1.374759e+00  3.165692e-01     1.059    1.047144e+00    2.233279e+00
+beta             4.960952e-01  2.582228e-01     1.035    1.187449e-01    9.228761e-01
+eta_0            8.988038e-01  3.357104e-03     1.004    8.921308e-01    9.053442e-01
+sigma_noise      2.654419e-03  1.778488e-04     1.009    2.337101e-03    3.026912e-03
+sigma_bias       5.108505e-03  2.349549e-03     1.008    1.651381e-03    1.074526e-02
+l_bias           8.510169e-01  2.290902e-01     1.010    3.696124e-01    1.270189e+00
+
+N1 estimate:
+N1 (oldroyd) = 0.199246  tau_w = 0.359522  S_R = 0.277099  at rate 0.4

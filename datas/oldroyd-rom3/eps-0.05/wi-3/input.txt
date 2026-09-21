@@ -1,0 +1,21 @@
+&comppar
+  model        = 6
+  lambda       = 7.5
+  mobility     = 0.05
+  betav        = 0.5
+  eta_0        = 1.0
+  U_avg        = 0.1
+  planar       = .false.
+  deltat       = 0.4
+  numtimesteps = 1000
+  dx_box       = 0.1
+  dx_wall      = 0.1
+  dx_inlet     = 0.1
+  vtkevery     = 100
+  stop_when_steady = .true.
+  steady_height_tol = 1.0e-04
+  steady_end_max_tol = 2.0e-04
+  steady_height_steps = 10
+  steady_min_steps = 80
+  steady_round_decimals = 4
+/

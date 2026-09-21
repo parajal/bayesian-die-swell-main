@@ -45,24 +45,12 @@ class DataLoaderMixin:
             raise ValueError("no swelling in observed curve (max height <= die radius)")
         self.max_displacement = disp
         self.beta = self.sigma_noise_prior = rate = 1.0 / (0.10 * disp)
-        if self._infer_sigma_bias() and self.sigma_bias_pc is not None:
-            # PC elicitation (Fuglstad et al. 2019): P(sigma_bias > sigma0) = alpha,
-            # sigma0 a fraction of the displacement. rate = -ln(alpha) / sigma0.
-            frac, alpha = self.sigma_bias_pc
-            self._sigma0 = frac * disp
-            self.sigma_bias_prior = -np.log(alpha) / self._sigma0
-        elif self._infer_sigma_bias():
+        if self._infer_sigma_bias():
+            # exponential prior, mean = sigma_bias_scale * displacement
             self.sigma_bias_prior = 1.0 / (self._sigma_bias_frac * disp)
         else:
             self.sigma_bias_prior = None
         self.c_bias_prior_sd = 0.10 * disp if self._infer_mean_bias() else None
-        if self._infer_l_bias() and self.l_bias_prior == "pc":
-            # PC prior (Fuglstad/Simpson) on the length scale: penalizes short (rough)
-            # scales toward the smooth base model, set by P(l < l0) = alpha with l0 a
-            # fraction of the x-range. 1-D range: lambda = -ln(alpha) * l0**0.5.
-            frac, alpha = self.l_bias_pc
-            self._l0 = frac * float(x.max() - x.min())
-            self.l_bias_pc_lambda = -np.log(alpha) * self._l0 ** 0.5
 
         self.sigma_noise_target = self.sigma_noise_percent / 100 * disp
         noise = np.random.default_rng(0).normal(0, self.sigma_noise_target, y.shape)
@@ -79,28 +67,37 @@ class DataLoaderMixin:
             "max displacement": f"{disp:.4g}",
             "sigma_noise prior": f"Exp(rate={rate:.4g}), mean {1 / rate:.4g}",
             "sigma_bias prior": (
-                f"PC: P(sigma>{self._sigma0:.4g})={self.sigma_bias_pc[1]:g}, rate={self.sigma_bias_prior:.4g}"
-                if self.sigma_bias_prior and self.sigma_bias_pc is not None else
                 f"Exp(mean={self._sigma_bias_frac * disp:.4g})" if self.sigma_bias_prior else "not inferred"),
             "c_bias prior": f"Normal(0, {self.c_bias_prior_sd:.4g})" if self.c_bias_prior_sd else "not inferred",
             "l_bias prior": (
                 f"Uniform({self.l_bias_bounds[0]:g}, {self.l_bias_bounds[1]:g})"
-                if self._infer_l_bias() and self.l_bias_prior == "uniform" else
-                f"PC: P(l<{self._l0:.4g})={self.l_bias_pc[1]:g}, lambda={self.l_bias_pc_lambda:.4g}"
                 if self._infer_l_bias() else
                 "fixed (from discrepancy ACF, set at run_mcmc)" if self.l_bias == "fixed"
                 else f"fixed {self.l_bias:g}"),
             "bias kernel": self.correlation_matrix,
             "bias anchor": f"delta({self.bias_anchor:g})=0" if self.bias_anchor is not None else "none",
-            "bias derivative": "delta'(5)=0" if self.constrained_gradient else "none",
+            "bias derivative": ("delta'(x)=0 at %d pts in [%g,%g]" % (
+                len(self.bias_gradient_points), self.bias_gradient_points[0],
+                self.bias_gradient_points[-1]) if self.constrained_gradient else "none"),
             "curve noise": f"{self.sigma_noise_percent}% of disp, sigma {self.sigma_noise_target:.4g} "
                            f"(realized {self.sigma_noise_realized:.4g})",
         }
 
         if self.use_pressure:
-            self.pressure_obs = self.pressure_obs_clean = np.loadtxt(folder / "pressure_drop.txt").ravel()
+            p_clean = np.loadtxt(folder / "pressure_drop.txt").ravel()
+            self.pressure_obs_clean = p_clean
+            # Synthetic noise: sigma = sigma_noise_percent% of each |pressure_drop| value
+            # (analogous to the curve, which uses % of the max displacement).
+            self.pressure_noise_target = self.sigma_noise_percent / 100 * np.abs(p_clean)
+            p_noise = np.random.default_rng(1).normal(0.0, self.pressure_noise_target)
+            self.pressure_noise_realized = float(np.sqrt(np.mean(p_noise ** 2)))
+            self.pressure_obs = p_clean + p_noise
             self.pressure_drop_obs = float(self.pressure_obs[0])
-            info["pressure"] = f"{np.array2string(self.pressure_obs, precision=4)} (no noise)"
+            info["pressure"] = (
+                f"{np.array2string(self.pressure_obs, precision=4)} "
+                f"({self.sigma_noise_percent}% of |drop|, sigma "
+                f"{np.array2string(self.pressure_noise_target, precision=4)}, "
+                f"realized {self.pressure_noise_realized:.4g})")
 
         width = max(map(len, info))
         print("\n".join(f"{k:<{width}} : {v}" for k, v in info.items()))
