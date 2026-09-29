@@ -4,8 +4,6 @@ import numpy as np
 class PriorMixin:
 
     def log_prior(self, phi):
-        """Uniform on the material parameters in the sampler's coordinates (log10 of both with
-        parametrize, i.e. log-uniform); exponential on sigma_noise (and sigma_bias)."""
         phi = np.asarray(phi, float)
         lo, hi = np.asarray(self._get_sampling_bounds(), float).T
         rates = np.array([self.sigma_noise_prior]

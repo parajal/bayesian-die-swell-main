@@ -22,7 +22,7 @@ MODEL_PARAMETER_NAMES = {
 LABELS = {
     "lambda": r"$\lambda$", "beta": r"$\beta$", "alpha": r"$\alpha$",
     "epsilon": r"$\epsilon$", "N1": r"$N_1$",
-    "theta1": r"$\theta_1=(1-\beta)\lambda$", "theta2": r"$\theta_2=\beta$",
+    "theta1": r"$\theta_1\lambda$", "theta2": r"$\theta_2$",
     "log10_theta1": r"$\log_{10}\theta_1$", "log10_theta2": r"$\log_{10}\theta_2$",
     "log10_lambda": r"$\log_{10}\lambda$",
     "sigma_noise": r"$\sigma_{\mathrm{noise}}$", "sigma_bias": r"$\sigma_{\mathrm{bias}}$",
@@ -43,7 +43,7 @@ class ROMCurve4BayesianInference(ROM, DataLoaderMixin, PriorMixin, LikelihoodMix
     y_obs_matrix = y_obs_matrix_clean = obs_x_coords = None
     sigma_noise_prior = sigma_bias_prior = samples = None
     constrained_model_error = False
-    bias_gradient_points = np.linspace(3.0, 5.0, 20)   # delta'(x)=0 here when constrained
+    bias_gradient_points = np.linspace(3.5, 5.0, 20)   # delta'(x)=0 here when constrained
 
     def __init__(self, swell_root=None, train_data_rels=None,
                  filenames_train=("curve4_y.txt", "parameters.txt"),
@@ -88,8 +88,7 @@ class ROMCurve4BayesianInference(ROM, DataLoaderMixin, PriorMixin, LikelihoodMix
                      else ["theta1", "theta2"] if self.parametrize
                      else list(MODEL_PARAMETER_NAMES[model]))
 
-            # prior bounds of (lambda, beta, alpha/epsilon); with parametrize, build_rom replaces
-            # them by the range of the training runs
+
             self.lam_bounds, self.beta_bounds = lambda_bounds, beta_bounds
             third = (epsilon_bounds or alpha_bounds) if model == "ptt" else alpha_bounds
             self.third_parameter_bounds = third
@@ -109,8 +108,7 @@ class ROMCurve4BayesianInference(ROM, DataLoaderMixin, PriorMixin, LikelihoodMix
         self.sigma_noise_percent, self.sigma_bias = float(sigma_noise_percent), bool(sigma_bias)
 
         self.l_bias = float(l_bias)
-        # squared-exponential model bias; True -> delta(0)=0 at the die exit and
-        # delta'(x)=0 at bias_gradient_points
+
         self.constrained_model_error = bool(constrained_model_error)
         self.seed = seed
 
@@ -251,29 +249,14 @@ class ROMCurve4BayesianInference(ROM, DataLoaderMixin, PriorMixin, LikelihoodMix
         return rate, eta0 * rate, f"eta0 * gammadot_w, eta0 = {eta0:g} (no pressure_drop.txt)"
 
     def _eta0_for_n1(self, u_avg, r):
-        """eta0 for N1. Oldroyd-B (constant viscosity): read the observation's pressure_drop.txt
-        and use tau_xy / gammadot_w with tau_xy = R |dp/dx| / 2 and gammadot_w = 4 U_avg / R.
-        Without that file (and for the other families): the eta0 argument, else 1."""
+
         dpdx = self._pressure_drop_dpdx() if self.model_family == "oldroyd" else None
         if dpdx is not None:
             return 0.5 * r * abs(dpdx) / (4.0 * u_avg / r)
         return float(self.eta0 if self.eta0 is not None else 1.0)
 
     def compute_N1(self, U_avg, radius=None, n_expectation=500, analytic_oldroyd=True, **rheo_kwargs):
-        """Posterior distribution of N1 at the die-wall shear rate gammadot_w = 4 U_avg / R
-        (e.g. ``model.compute_N1(U_avg=0.1)``): N1(theta_s) for each posterior sample theta_s,
-        summarised by E[N1] (their mean), SD and 95% credible interval, and likewise
-        S_R = N1 / tau_w.
 
-        Oldroyd-B: closed form over all samples, N1 = 2 theta1 gammadot_w tau_xy with
-        theta1 = (1 - beta) lambda (inferred directly with parametrize) and tau_xy = R |dp/dx| / 2
-        from the observation's pressure_drop.txt (else eta0 gammadot_w, eta0 argument or 1);
-        this is 2 (1 - beta) eta0 lambda gammadot_w^2 with eta0 = tau_xy / gammadot_w.
-        Other families (or analytic_oldroyd=False) run one rheology simulation per draw on a
-        random ``n_expectation``-sized subset of the samples.
-        """
-        if self.samples is None:
-            raise RuntimeError("no posterior samples yet; call run_mcmc() first")
         u_avg, r = float(U_avg), float(self.radius if radius is None else radius)
         family, names = self.model_family, self.material_parameter_names
         S = np.asarray(self.samples, float)

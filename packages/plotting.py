@@ -36,7 +36,6 @@ class PlottingMixin:
         out = Path(self.infer_dir)
         out.mkdir(parents=True, exist_ok=True)
         fig = plt.gcf()
-        fig.tight_layout()
         fig.savefig(out / f"{filename}_noise_{self.sigma_noise_percent:g}.pdf", dpi=300)
 
     def _finish_curve(self, ax, y, name, handles=None, labels=None) -> None:
@@ -199,17 +198,7 @@ class PlottingMixin:
         self.plot_corner(**kwargs)
 
     def _bias_correlation_matrix(self, x, l_bias) -> np.ndarray:
-        """Squared-exponential discrepancy correlation c(r) = exp(-r^2 / 2 l^2).
 
-        With ``constrained_model_error=True`` it is GP-conditioned (Brynjarsdottir & O'Hagan
-        2014; derivatives of a GP are jointly Gaussian) on delta(0)=0 at the die exit and
-        delta'(x)=0 at ``bias_gradient_points`` (flat discrepancy in the plateau):
-        ``K' = K - C A^{-1} C^T`` (PSD; zero variance along the constraints), with ``C``/``A``
-        the value/derivative cross- and auto-covariances of the kernel.
-
-        Also used by the likelihood. K' depends only on the grid, l_bias and the constraints,
-        so the last result is cached (read-only) and reused while those are unchanged.
-        """
         x = np.asarray(x, dtype=float).ravel()
         constrained = bool(getattr(self, "constrained_model_error", False))
         Dc = np.asarray(self.bias_gradient_points, float) if constrained else np.empty(0)

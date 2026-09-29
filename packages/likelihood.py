@@ -1,13 +1,8 @@
 """Gaussian likelihood and posterior, evaluated for one point or many (emcee vectorize=True)."""
-
 import numpy as np
-
-
 class LikelihoodMixin:
 
     def _residuals(self, theta):
-        """Observed minus ROM curve for rows of physical parameters, shape (K, n_obs)
-        ((K, 1) height misfits in swell_height mode). One batched ROM prediction."""
         theta = np.atleast_2d(np.asarray(theta, float))[:, :self.n_material_params]
         y_obs = np.asarray(self.y_obs_matrix[0], float)
         if getattr(self, "model_family", None) == "tanner":
@@ -20,8 +15,6 @@ class LikelihoodMixin:
         return y_obs - Y
 
     def _bias_eigh(self, x, l_bias):
-        """(w, V) with K' = V diag(w) V^T for the cached discrepancy correlation K' (w clipped
-        at 0). Recomputed only when K' itself changes."""
         K = self._bias_correlation_matrix(x, l_bias)
         cached = getattr(self, "_bias_eig_cache", None)
         if cached is None or cached[0] is not K:
@@ -30,10 +23,6 @@ class LikelihoodMixin:
         return cached[1]
 
     def log_likelihood(self, phi):
-        """Gaussian log-likelihood for one point (float) or rows of points (array), in sampler
-        coordinates. With the model bias, cov = s_noise^2 I + s_bias^2 K' is diagonal in the
-        eigenbasis of K', with eigenvalues d = s_noise^2 + s_bias^2 w, so
-        log|cov| = sum log d and r^T cov^-1 r = sum (V^T r)^2 / d: no factorisation per point."""
         phi = np.asarray(phi, float)
         theta = self._to_physical(np.atleast_2d(phi))
         n = self.n_material_params
@@ -59,8 +48,6 @@ class LikelihoodMixin:
         return ll if phi.ndim > 1 else float(ll[0])
 
     def log_posterior(self, phi):
-        """Log posterior for one point (float) or rows of points (array, as emcee passes with
-        vectorize=True); the ROM is evaluated once for all rows with a finite prior."""
         phi = np.asarray(phi, float)
         Phi = np.atleast_2d(phi)
         lp = np.array([self.log_prior(p) for p in Phi])

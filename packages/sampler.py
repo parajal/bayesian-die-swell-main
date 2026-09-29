@@ -4,7 +4,6 @@ import emcee
 import numpy as np
 from sklearn.cluster import KMeans
 
-
 class Sampler:
     """Run MCMC and compute basic diagnostics."""
 
@@ -17,7 +16,7 @@ class Sampler:
         return np.sqrt(((n - 1) / n * W + B / n) / W)
 
     def run_mcmc(self, nwalkers=10, nsteps=5000, burn_fraction=0.3,
-                 warmup_fraction=0.1, ball_scale=0.2):
+                 warmup_fraction=0.1, ball_scale=0.2, n_tau=50, check_every=100):
         np.random.seed(self.seed)
         ndim = self._get_ndim()
         p0 = self.sample_starting_points(nwalkers)
@@ -26,7 +25,7 @@ class Sampler:
         sampler = emcee.EnsembleSampler(nwalkers, ndim, self.log_posterior, moves=moves,
                                         vectorize=True)
 
-        nwarm, nburn = int(warmup_fraction * nsteps), int(burn_fraction * nsteps)
+        nwarm = int(warmup_fraction * nsteps)
         if nwarm:
             state = sampler.run_mcmc(p0, nwarm, progress=True)
             best = state.coords[np.argmax(state.log_prob)]
@@ -36,11 +35,34 @@ class Sampler:
             sampler = emcee.EnsembleSampler(nwalkers, ndim, self.log_posterior, moves=moves,
                                             vectorize=True)
 
-        sampler.run_mcmc(p0, nsteps, progress=True)
+        # sample until converged (n_tau * tau < steps and tau stable to 1%), at most nsteps
+        converged, old_tau = False, np.inf
+        for _ in sampler.sample(p0, iterations=nsteps, progress=True):
+            if sampler.iteration % check_every:
+                continue
+            tau = sampler.get_autocorr_time(tol=0)
+            converged = bool(np.all(n_tau * tau < sampler.iteration)
+                             and np.all(np.abs(old_tau - tau) / tau < 0.01))
+            if converged:
+                break
+            old_tau = tau
+
+        tau = sampler.get_autocorr_time(tol=0)
+        if converged:
+            nburn, thin = int(2 * np.max(tau)), max(1, int(0.5 * np.min(tau)))
+            print(f"converged after {sampler.iteration} steps (> {n_tau} tau, tau stable to 1%): "
+                  f"burn-in {nburn}, thin {thin}")
+        else:
+            nburn, thin = int(burn_fraction * sampler.iteration), 1
+            print(f"not converged within {nsteps} steps (needs > {n_tau} x max tau = "
+                  f"{n_tau * np.max(tau):.0f} steps and a stable tau): burn-in {nburn} "
+                  f"(burn_fraction), no thinning")
+
         self.sampler = sampler               # kept for diagnostics (autocorrelation, acceptance, ...)
+        self.nburn, self.thin, self.converged = nburn, thin, converged
         self.chain = sampler.get_chain()
-        self.log_prob = sampler.get_log_prob(discard=nburn, flat=True)
-        flat = sampler.get_chain(discard=nburn, flat=True)
+        self.log_prob = sampler.get_log_prob(discard=nburn, thin=thin, flat=True)
+        flat = sampler.get_chain(discard=nburn, thin=thin, flat=True)
         self.samples = self._to_physical(flat)
         self.map_theta = self._to_physical(flat[np.argmax(self.log_prob)])
         self.results = self.print_inference_results(nburn)
