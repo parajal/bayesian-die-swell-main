@@ -16,43 +16,35 @@ class Sampler:
         B = n * chain.mean(axis=0).var(axis=0, ddof=1)
         return np.sqrt(((n - 1) / n * W + B / n) / W)
 
-    @staticmethod
-    def _moves(points):
-        """0.6 stretch + 0.2 Gaussian random walk + 0.2 DE snooker. The Gaussian proposal
-        covariance is that of ``points`` (sampler coordinates) scaled by 2.38^2 / ndim."""
-        points = np.atleast_2d(points)
-        cov = np.cov(points, rowvar=False) * 2.38 ** 2 / points.shape[1]
-        return [(emcee.moves.StretchMove(), 0.6),
-                (emcee.moves.GaussianMove(cov), 0.2),
-                (emcee.moves.DESnookerMove(), 0.2)]
-
     def run_mcmc(self, nwalkers=10, nsteps=5000, burn_fraction=0.3,
                  warmup_fraction=0.1, ball_scale=0.2):
         np.random.seed(self.seed)
         ndim = self._get_ndim()
         p0 = self.sample_starting_points(nwalkers)
         self._print_walkers("Initial walkers", p0, n = nwalkers)
-        # warm-up: Gaussian covariance from the initial walkers
-        sampler = emcee.EnsembleSampler(nwalkers, ndim, self.log_posterior, moves=self._moves(p0))
+        moves = [(emcee.moves.DEMove(), 0.6), (emcee.moves.DESnookerMove(), 0.2), (emcee.moves.StretchMove(), 0.2)]
+        sampler = emcee.EnsembleSampler(nwalkers, ndim, self.log_posterior, moves=moves,
+                                        vectorize=True)
 
         nwarm, nburn = int(warmup_fraction * nsteps), int(burn_fraction * nsteps)
         if nwarm:
             state = sampler.run_mcmc(p0, nwarm, progress=True)
             best = state.coords[np.argmax(state.log_prob)]
-            warm = sampler.get_chain(discard=nwarm // 2, flat=True)    # second half of the warm-up
-            # restart ball: ball_scale x each parameter's spread in the warm-up (not absolute)
+            warm = sampler.get_chain(discard=nwarm // 2, flat=True)
             p0 = self.sample_starting_points(nwalkers, center=best, scale=ball_scale * warm.std(axis=0))
             self._print_walkers("Walkers restarted after warm-up", p0, n = nwalkers)
-            # main run: Gaussian covariance from the warm-up samples
-            sampler = emcee.EnsembleSampler(nwalkers, ndim, self.log_posterior, moves=self._moves(warm))
+            sampler = emcee.EnsembleSampler(nwalkers, ndim, self.log_posterior, moves=moves,
+                                            vectorize=True)
 
         sampler.run_mcmc(p0, nsteps, progress=True)
+        self.sampler = sampler               # kept for diagnostics (autocorrelation, acceptance, ...)
         self.chain = sampler.get_chain()
         self.log_prob = sampler.get_log_prob(discard=nburn, flat=True)
         flat = sampler.get_chain(discard=nburn, flat=True)
         self.samples = self._to_physical(flat)
         self.map_theta = self._to_physical(flat[np.argmax(self.log_prob)])
         self.results = self.print_inference_results(nburn)
+        self.print_diagnostics(nburn)
         return self.samples
 
     def _print_walkers(self, title, p0, n = 10):
@@ -74,7 +66,7 @@ class Sampler:
                               rng.exponential(1 / rates, size=(n, len(rates)))])
         else:
             pool = center + scale * rng.standard_normal((n, len(center)))
-        pool = pool[[np.isfinite(self.log_posterior(p)) for p in pool]]
+        pool = pool[np.isfinite(self.log_posterior(pool))]
         if len(pool) < nwalkers:
             raise RuntimeError("not enough valid starting points to initialize walkers")
         if center is not None:
@@ -97,3 +89,27 @@ class Sampler:
             print(f"{name:<15}{r['mean']:>12.4e}{r['std']:>12.4e}{r['rhat']:>10.3f}"
                   f"{r['ci_low']:>15.4e}{r['ci_high']:>15.4e}")
         return results
+
+    def print_diagnostics(self, nburn):
+        """Print and return the mean acceptance fraction, the integrated autocorrelation time
+        per parameter (sampler coordinates, after burn-in) with the kept-steps / tau ratio, and
+        the walkers whose mean log posterior lies more than 5 below the median (stuck walkers)."""
+        s = self.sampler
+        names = self._get_parameter_labels(latex=False)
+        acc = float(np.mean(s.acceptance_fraction))
+        tau = s.get_autocorr_time(discard=nburn, quiet=True)
+        n_over_tau = float((s.iteration - nburn) / np.nanmax(tau))
+        lp = s.get_log_prob(discard=nburn).mean(axis=0)          # mean log posterior per walker
+        med = float(np.median(lp))
+        stuck = np.flatnonzero(lp < med - 5.0).tolist()
+
+        print(f"acceptance fraction {acc:.3f} (aim ~0.2-0.5)")
+        print("autocorrelation time (steps): "
+              + ", ".join(f"{n} {t:.0f}" for n, t in zip(names, tau))
+              + f"  |  kept steps / max tau = {n_over_tau:.0f} (aim >= 50)")
+        print(f"walker mean log posterior: median {med:.1f}, lowest {lp.min():.1f} "
+              f"(walker {int(lp.argmin())})"
+              + (f"; more than 5 below the median: walkers {stuck}" if stuck else ""))
+        self.diagnostics = dict(acceptance=acc, tau=dict(zip(names, map(float, tau))),
+                                n_over_tau=n_over_tau, walker_mean_logp=lp, stuck_walkers=stuck)
+        return self.diagnostics

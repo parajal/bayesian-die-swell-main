@@ -1,55 +1,70 @@
-"""Gaussian likelihood and posterior."""
+"""Gaussian likelihood and posterior, evaluated for one point or many (emcee vectorize=True)."""
 
 import numpy as np
-from scipy.linalg import cho_factor, cho_solve
+
 
 class LikelihoodMixin:
 
-    @staticmethod
-    def _gauss_ll(r, cov):
-        """log N(r | 0, cov); cov is a scalar variance or a full matrix."""
-        r = np.ravel(r)
-        if np.ndim(cov) == 0:
-            quad, logdet = r @ r / cov, r.size * np.log(cov)
-        else:
-            c = cho_factor(cov, lower=True)
-            quad, logdet = r @ cho_solve(c, r), 2 * np.log(np.diag(c[0])).sum()
-        return -0.5 * (quad + logdet + r.size * np.log(2 * np.pi))
-
-    def _residual(self, theta):
+    def _residuals(self, theta):
+        """Observed minus ROM curve for rows of physical parameters, shape (K, n_obs)
+        ((K, 1) height misfits in swell_height mode). One batched ROM prediction."""
+        theta = np.atleast_2d(np.asarray(theta, float))[:, :self.n_material_params]
         y_obs = np.asarray(self.y_obs_matrix[0], float)
-        family = getattr(self, "model_family", None)
-        if family == "tanner":
-            return np.array([y_obs.max() - self._tanner_height(theta[0])])
-
-        y = self.predict(np.asarray(theta, float)[:self.n_material_params])
-        if y.size > y_obs.size:
-            y = y[self._obs_indices]
+        if getattr(self, "model_family", None) == "tanner":
+            return np.array([[y_obs.max() - self._tanner_height(t[0])] for t in theta])
+        Y = np.atleast_2d(self.predict(theta))
+        if Y.shape[1] > y_obs.size:
+            Y = Y[:, self._obs_indices]
         if getattr(self, "mode", "full_curve") == "swell_height":
-            return np.array([y_obs.max() - y.max()])
-        return y_obs - y
+            return (y_obs.max() - Y.max(axis=1))[:, None]
+        return y_obs - Y
+
+    def _bias_eigh(self, x, l_bias):
+        """(w, V) with K' = V diag(w) V^T for the cached discrepancy correlation K' (w clipped
+        at 0). Recomputed only when K' itself changes."""
+        K = self._bias_correlation_matrix(x, l_bias)
+        cached = getattr(self, "_bias_eig_cache", None)
+        if cached is None or cached[0] is not K:
+            w, V = np.linalg.eigh(K)
+            cached = self._bias_eig_cache = (K, (np.clip(w, 0.0, None), V))
+        return cached[1]
 
     def log_likelihood(self, phi):
+        """Gaussian log-likelihood for one point (float) or rows of points (array), in sampler
+        coordinates. With the model bias, cov = s_noise^2 I + s_bias^2 K' is diagonal in the
+        eigenbasis of K', with eigenvalues d = s_noise^2 + s_bias^2 w, so
+        log|cov| = sum log d and r^T cov^-1 r = sum (V^T r)^2 / d: no factorisation per point."""
         phi = np.asarray(phi, float)
-        if not np.isfinite(phi).all():
-            return -np.inf
+        theta = self._to_physical(np.atleast_2d(phi))
+        n = self.n_material_params
+        s_noise = theta[:, n]
+        s_bias = theta[:, n + 1] if self._infer_sigma_bias() else None
 
-        theta = self._to_physical(phi)
-        s_noise, s_bias = self._extract_noise_bias(theta)
-        if not all(np.isfinite(s) and s > 0 for s in (s_noise, s_bias) if s is not None):
-            return -np.inf
-
-        r = self._residual(theta)
-        if s_bias is None:
-            cov = s_noise**2
-        else:
-            x = self.obs_x_coords[:r.size]
-            K = self._bias_correlation_matrix(x, self.l_bias)
-            cov = s_noise**2 * np.eye(r.size) + s_bias**2 * K
-        ll = self._gauss_ll(r, cov)
-
-        return ll if np.isfinite(ll) else -np.inf
+        ll = np.full(len(theta), -np.inf)
+        ok = np.isfinite(theta).all(axis=1) & (s_noise > 0)
+        if s_bias is not None:
+            ok &= s_bias > 0
+        if ok.any():
+            R = self._residuals(theta[ok])
+            N = R.shape[1]
+            if s_bias is None:
+                var = s_noise[ok] ** 2
+                quad, logdet = (R ** 2).sum(axis=1) / var, N * np.log(var)
+            else:
+                w, V = self._bias_eigh(self.obs_x_coords[:N], self.l_bias)
+                d = s_noise[ok, None] ** 2 + s_bias[ok, None] ** 2 * w
+                quad, logdet = ((R @ V) ** 2 / d).sum(axis=1), np.log(d).sum(axis=1)
+            ll[ok] = -0.5 * (quad + logdet + N * np.log(2 * np.pi))
+        ll[~np.isfinite(ll)] = -np.inf
+        return ll if phi.ndim > 1 else float(ll[0])
 
     def log_posterior(self, phi):
-        lp = self.log_prior(phi)
-        return lp + self.log_likelihood(phi) if np.isfinite(lp) else -np.inf
+        """Log posterior for one point (float) or rows of points (array, as emcee passes with
+        vectorize=True); the ROM is evaluated once for all rows with a finite prior."""
+        phi = np.asarray(phi, float)
+        Phi = np.atleast_2d(phi)
+        lp = np.array([self.log_prior(p) for p in Phi])
+        ok = np.isfinite(lp)
+        if ok.any():
+            lp[ok] += self.log_likelihood(Phi[ok])
+        return lp if phi.ndim > 1 else float(lp[0])

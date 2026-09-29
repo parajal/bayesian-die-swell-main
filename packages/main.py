@@ -24,6 +24,7 @@ LABELS = {
     "epsilon": r"$\epsilon$", "N1": r"$N_1$",
     "theta1": r"$\theta_1=(1-\beta)\lambda$", "theta2": r"$\theta_2=\beta$",
     "log10_theta1": r"$\log_{10}\theta_1$", "log10_theta2": r"$\log_{10}\theta_2$",
+    "log10_lambda": r"$\log_{10}\lambda$",
     "sigma_noise": r"$\sigma_{\mathrm{noise}}$", "sigma_bias": r"$\sigma_{\mathrm{bias}}$",
 }
 
@@ -41,7 +42,7 @@ class ROMCurve4BayesianInference(ROM, DataLoaderMixin, PriorMixin, LikelihoodMix
 
     y_obs_matrix = y_obs_matrix_clean = obs_x_coords = None
     sigma_noise_prior = sigma_bias_prior = samples = None
-    constrained_model_error = orthogonality_constraint = False
+    constrained_model_error = False
     bias_gradient_points = np.linspace(3.0, 5.0, 20)   # delta'(x)=0 here when constrained
 
     def __init__(self, swell_root=None, train_data_rels=None,
@@ -51,7 +52,7 @@ class ROMCurve4BayesianInference(ROM, DataLoaderMixin, PriorMixin, LikelihoodMix
                  epsilon_bounds=None,
                  n1_bounds=None, tanner_ratio_bounds=(0.001, 10.0),
                  true_theta=None, sigma_noise_percent=0.0, sigma_bias=None, l_bias=1.0,
-                 constrained_model_error=False, orthogonality_constraint=False,
+                 constrained_model_error=False,
                  thin=1, model="oldroyd", mode="full_curve", eta0=None, radius=1.0,
                  parametrize=False, seed=42):
 
@@ -60,9 +61,13 @@ class ROMCurve4BayesianInference(ROM, DataLoaderMixin, PriorMixin, LikelihoodMix
 
         self.swell_root = self.infer_dir = Path(swell_root or Path.cwd()).expanduser().resolve()
         self.train_data_rels = train_data_rels
-        self.parametrize = bool(parametrize)
+        # parametrize: False -> (lambda, beta); True -> (theta1, theta2=beta); 'lambda' ->
+        # (theta1, lambda) with a log10-input ROM; both sampled as log10. theta1 = (1 - beta) lambda.
+        if parametrize not in (False, True, None, "lambda"):
+            raise ValueError(f"parametrize must be False, True or 'lambda', got {parametrize!r}.")
+        self.parametrize = parametrize if parametrize == "lambda" else bool(parametrize)
         if self.parametrize and model != "oldroyd":
-            raise ValueError("parametrize=True needs model='oldroyd' (theta1 = (1 - beta) lambda).")
+            raise ValueError("parametrize needs model='oldroyd' (theta1 = (1 - beta) lambda).")
 
         self.model_family = model
         if model == "tanner":
@@ -79,7 +84,9 @@ class ROMCurve4BayesianInference(ROM, DataLoaderMixin, PriorMixin, LikelihoodMix
                 data, curve = data.parent, data.name
             self.data_dir, self.filenames_train = data.resolve(), (curve, params)
             ROM.__init__(self, scaler=scaler, eps=eps, random_state=seed)
-            names = ["theta1", "theta2"] if self.parametrize else list(MODEL_PARAMETER_NAMES[model])
+            names = (["theta1", "lambda"] if self.parametrize == "lambda"
+                     else ["theta1", "theta2"] if self.parametrize
+                     else list(MODEL_PARAMETER_NAMES[model]))
 
             # prior bounds of (lambda, beta, alpha/epsilon); with parametrize, build_rom replaces
             # them by the range of the training runs
@@ -95,7 +102,7 @@ class ROMCurve4BayesianInference(ROM, DataLoaderMixin, PriorMixin, LikelihoodMix
         self.true_theta = None if true_theta is None else tuple(map(float, true_theta))
         if self.parametrize and self.true_theta is not None:      # given as (lambda, beta)
             lam, beta = self.true_theta
-            self.true_theta = ((1.0 - beta) * lam, beta)
+            self.true_theta = ((1.0 - beta) * lam, lam if self.parametrize == "lambda" else beta)
         self.mode, self.thin, self.radius, self.eta0 = mode, int(thin), float(radius), eta0
         if sigma_bias not in (True, False, None):     # True -> infer the model bias; None -> none
             raise ValueError(f"sigma_bias must be True or None, got {sigma_bias!r}.")
@@ -105,8 +112,6 @@ class ROMCurve4BayesianInference(ROM, DataLoaderMixin, PriorMixin, LikelihoodMix
         # squared-exponential model bias; True -> delta(0)=0 at the die exit and
         # delta'(x)=0 at bias_gradient_points
         self.constrained_model_error = bool(constrained_model_error)
-        # True -> delta orthogonal to dy/dtheta at the no-bias best fit (Plumlee 2017)
-        self.orthogonality_constraint = bool(orthogonality_constraint)
         self.seed = seed
 
     def build_rom(self):
@@ -114,23 +119,42 @@ class ROMCurve4BayesianInference(ROM, DataLoaderMixin, PriorMixin, LikelihoodMix
             print("Tanner analytical forward model; no ROM is built.")
             return
         X_train, param_train = self.load_training_data()
-        self.train(X_train, param_train)
-        print(f"curve4_y GPR on ({', '.join(self.material_parameter_names)}), "
-              f"{len(X_train)} curves: {self.model.kernel_}")
+        self.train(X_train, self._rom_input(param_train))
+        names = self.material_parameter_names
+        inputs = [f"log10 {n}" for n in names] if self.parametrize == "lambda" else names
+        print(f"curve4_y GPR on ({', '.join(inputs)}), {len(X_train)} curves: {self.model.kernel_}")
         if self.parametrize:
             self._set_parametrize_bounds(param_train)
-            print(f"parametrize bounds: theta1 {self.theta_bounds[0]}, theta2 {self.theta_bounds[1]}, "
-                  f"implied lambda {self.lam_bounds}")
+            implied = (f"implied beta {self.beta_bounds}" if self.parametrize == "lambda"
+                       else f"implied lambda {self.lam_bounds}")
+            print(f"parametrize bounds: {names[0]} {self.theta_bounds[0]}, "
+                  f"{names[1]} {self.theta_bounds[1]}, {implied}")
 
     def _set_parametrize_bounds(self, param_train=None):
-        """theta1, theta2 and the implied lambda: the range of the training runs. Needs only the
-        training parameters, so the prior is available before build_rom (e.g. for plot_prior)."""
+        """The two parameters and the implied third one (lambda for parametrize=True, beta for
+        'lambda'): the range of the training runs. Needs only the training parameters, so the
+        prior is available before build_rom (e.g. for plot_prior)."""
         if param_train is None:
             param_train = self.load_training_data()[1]
-        lam = param_train[:, 0] / (1.0 - param_train[:, 1])
         self.theta_bounds = [(float(lo), float(hi))
                              for lo, hi in zip(param_train.min(axis=0), param_train.max(axis=0))]
-        self.lam_bounds = (float(lam.min()), float(lam.max()))
+        if self.parametrize == "lambda":          # (theta1, lambda): beta = 1 - theta1 / lambda
+            beta = 1.0 - param_train[:, 0] / param_train[:, 1]
+            self.beta_bounds = (float(beta.min()), float(beta.max()))
+        else:                                     # (theta1, theta2): lambda = theta1 / (1 - theta2)
+            lam = param_train[:, 0] / (1.0 - param_train[:, 1])
+            self.lam_bounds = (float(lam.min()), float(lam.max()))
+
+    def _rom_input(self, thetas):
+        """Physical material parameters -> ROM (GPR) inputs: log10 with parametrize='lambda'."""
+        x = np.array(thetas, float)
+        if self.parametrize == "lambda":
+            x[..., :2] = np.log10(x[..., :2])
+        return x
+
+    def predict(self, thetas):
+        """ROM curve(s) at physical material parameter row(s) (see ROM.predict)."""
+        return ROM.predict(self, self._rom_input(thetas))
 
     def _infer_sigma_bias(self):
         return self.sigma_bias
@@ -149,8 +173,8 @@ class ROMCurve4BayesianInference(ROM, DataLoaderMixin, PriorMixin, LikelihoodMix
         return [(float(lo), float(hi)) for lo, hi in bounds]
 
     def _log10_params(self):
-        """Material parameters sampled as log10 (log-uniform prior): theta1 and theta2 with
-        parametrize; none otherwise."""
+        """Material parameters sampled as log10 (log-uniform prior): both with parametrize
+        (theta1, theta2 or theta1, lambda); none otherwise."""
         return (0, 1) if self.parametrize else ()
 
     def _get_sampling_bounds(self):
@@ -163,11 +187,15 @@ class ROMCurve4BayesianInference(ROM, DataLoaderMixin, PriorMixin, LikelihoodMix
             bounds[i] = (float(np.log10(lo)), float(np.log10(hi)))
         return bounds
 
-    def _lambda_in_bounds(self, theta):
-        """With parametrize, the implied lambda = theta1 / (1 - theta2) must lie within the
-        training lambda range: the theta1 x theta2 box alone reaches lambdas far outside it."""
+    def _implied_in_bounds(self, theta):
+        """With parametrize, the implied third parameter must lie within the training range (the
+        two-parameter box alone reaches values far outside it): lambda = theta1 / (1 - theta2) for
+        parametrize=True; beta = 1 - theta1 / lambda for 'lambda' (a straight band in log10)."""
         if not getattr(self, "parametrize", False):
             return True
+        if self.parametrize == "lambda":
+            lo, hi = self.beta_bounds
+            return lo <= 1.0 - theta[0] / theta[1] <= hi
         lo, hi = self.lam_bounds
         return lo <= theta[0] / (1.0 - theta[1]) <= hi
 
@@ -199,47 +227,6 @@ class ROMCurve4BayesianInference(ROM, DataLoaderMixin, PriorMixin, LikelihoodMix
         return theta
 
     _to_physical_chain = _to_physical
-
-    def _obs_prediction(self, thetas):
-        """ROM curves for rows of physical material parameters, on the observation grid."""
-        y = np.atleast_2d(self.predict(np.atleast_2d(thetas)))
-        n_obs = np.asarray(self.y_obs_matrix).shape[-1]
-        return y[:, self._obs_indices] if y.shape[1] != n_obs else y
-
-    def _orthogonal_directions(self):
-        """Model sensitivities dy/dtheta_i on the observation grid (unit-norm columns) at the
-        no-bias least-squares fit theta* of the loaded curve. With orthogonality_constraint the
-        discrepancy is made orthogonal to them (Plumlee 2017), so it cannot mimic a parameter
-        change. The span is the same in physical and sampler coordinates, so the derivatives are
-        taken in the latter. Computed once per loaded observation and cached."""
-        y_obs = np.asarray(self.y_obs_matrix[0], float)
-        cached = getattr(self, "_orth_cache", None)
-        if cached is not None and cached[0] == y_obs.tobytes():
-            return cached[1]
-        from scipy.optimize import least_squares
-
-        n = self.n_material_params
-        lo, hi = np.asarray(self._get_sampling_bounds(), float).T
-        curve = lambda phi: self._obs_prediction(self._to_physical(phi))
-        # start: best point of an interior grid over the prior box, then least squares
-        axes = [np.linspace(a, b, 17)[1:-1] for a, b in zip(lo, hi)]
-        grid = np.stack(np.meshgrid(*axes, indexing="ij"), -1).reshape(-1, n)
-        start = grid[np.argmin(((curve(grid) - y_obs) ** 2).sum(axis=1))]
-        phi = least_squares(lambda p: curve(p)[0] - y_obs, start, bounds=(lo, hi)).x
-
-        G = np.empty((y_obs.size, n))
-        for i in range(n):                                    # central differences
-            h = 1e-4 * (hi[i] - lo[i])
-            up, dn = phi.copy(), phi.copy()
-            up[i], dn[i] = min(phi[i] + h, hi[i]), max(phi[i] - h, lo[i])
-            ya, yb = curve(np.vstack([up, dn]))
-            G[:, i] = (ya - yb) / (up[i] - dn[i])
-        G /= np.linalg.norm(G, axis=0)
-
-        self.theta_orth_ref = self._to_physical(phi)
-        print(f"orthogonality constraint: no-bias best fit theta* = {np.round(self.theta_orth_ref, 5)}")
-        self._orth_cache = (y_obs.tobytes(), G)
-        return G
 
     def _load_n1_function(self, module_name, func_name):
         """Import a compute_n1_* helper from the repo root or swell_root."""

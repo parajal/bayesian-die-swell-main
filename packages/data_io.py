@@ -7,7 +7,9 @@ class DataLoaderMixin:
     def load_training_data(self):
         Y = np.loadtxt(self.data_dir / self.filenames_train[0], ndmin=2)
         P = np.loadtxt(self.data_dir / self.filenames_train[1], ndmin=2)[:, :self.n_material_params]
-        if self.parametrize:
+        if self.parametrize == "lambda":              # (lambda, beta) -> (theta1, lambda)
+            P = np.column_stack([(1.0 - P[:, 1]) * P[:, 0], P[:, 0]])
+        elif self.parametrize:                        # (lambda, beta) -> (theta1, theta2=beta)
             P[:, 0] *= 1.0 - P[:, 1]
         return Y, P
 

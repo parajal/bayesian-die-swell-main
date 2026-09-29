@@ -70,7 +70,7 @@ class PlottingMixin:
     def _prior_curves(self, n: int = 5000) -> "list[tuple[np.ndarray, np.ndarray]]":
         """(x, density) for every inferred parameter, in vector order, in the sampler's coordinates.
 
-        material -> uniform (log10 theta1, theta2 with parametrize); sigma_noise/sigma_bias -> exponential.
+        material -> uniform (log10 of both with parametrize); sigma_noise/sigma_bias -> exponential.
         """
         curves = []
         for lo, hi in self._get_sampling_bounds():                  # material params
@@ -207,21 +207,13 @@ class PlottingMixin:
         ``K' = K - C A^{-1} C^T`` (PSD; zero variance along the constraints), with ``C``/``A``
         the value/derivative cross- and auto-covariances of the kernel.
 
-        With ``orthogonality_constraint=True`` it is further conditioned on G^T delta = 0, with
-        G the model sensitivities dy/dtheta at the no-bias best fit (Plumlee 2017; see
-        ``_orthogonal_directions``): ``K'' = K' - K'G (G^T K'G)^{-1} G^T K'``.
-
         Also used by the likelihood. K' depends only on the grid, l_bias and the constraints,
         so the last result is cached (read-only) and reused while those are unchanged.
         """
         x = np.asarray(x, dtype=float).ravel()
         constrained = bool(getattr(self, "constrained_model_error", False))
         Dc = np.asarray(self.bias_gradient_points, float) if constrained else np.empty(0)
-        orth = bool(getattr(self, "orthogonality_constraint", False))
-        G = self._orthogonal_directions() if orth else np.empty((x.size, 0))
-        if G.shape[0] != x.size:
-            raise ValueError("orthogonality_constraint needs the full observation grid (mode='full_curve').")
-        key = (float(l_bias), constrained, tuple(Dc), x.tobytes(), G.tobytes())
+        key = (float(l_bias), constrained, tuple(Dc), x.tobytes())
         cached = getattr(self, "_bias_corr_cache", None)
         if cached is not None and cached[0] == key:
             return cached[1]
@@ -239,11 +231,6 @@ class PlottingMixin:
                           [g.T, kf(Dc, Dc) / l2 * (1.0 - dd ** 2 / l2)]])     # Cov(d'(Dc), d'(Dc))
             A[np.diag_indices_from(A)] += 1e-10
             K = K - C @ np.linalg.solve(A, C.T)
-        if orth:                                         # G^T delta = 0 (Plumlee 2017)
-            KG = K @ G
-            B = G.T @ KG
-            B[np.diag_indices_from(B)] += 1e-10
-            K = K - KG @ np.linalg.solve(B, KG.T)
 
         K.setflags(write=False)
         self._bias_corr_cache = (key, K)
