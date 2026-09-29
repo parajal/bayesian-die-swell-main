@@ -1,0 +1,48 @@
+\documentclass{article}
+
+\usepackage{pdflscape}
+
+\begin{document}
+\begin{table}[h]
+  \centering
+  \begin{tabular}{lcc}
+    & Posterior & Prior 
+    \\\hline
+    mean MD mean & $mean_mean_MD &  $mean_MD_prior_mean
+    \\\hline
+    mean MD stddev & $mean_std_MD &  $mean_MD_prior_std
+    \\\hline
+    amplitude MD mean & $amplitude_mean_MD &  $amplitude_MD_prior_mean
+    \\\hline
+    amplitude MD stddev & $amplitude_std_MD &  $amplitude_MD_prior_std
+    \\\hline
+    length scale MD mean & $length_scale_mean_MD & $length_scale_MD_prior_mean
+    \\\hline
+    length scale MD stddev & $length_scale_std_MD & $length_scale_MD_prior_std
+    \\\hline  
+  \end{tabular}
+  \caption{Pure ML. Summary statistics on the parameters.
+    Nb of exp. obs.: $NbObs_EXP ;
+    Nb of pred.: $NbPred ;
+    Nb of MCMC samples: $num_results ;
+    Nb of PPC samples per MCMC sample: $nsamples_per_mcmc_sample ;
+    MCMC acceptance ratio: $p_accept .}
+\end{table}
+
+\begin{landscape}
+\begin{table}[h]
+  \centering
+  \begin{tabular}{lcccc}
+    & Distribution & Parameters & Mean & Standard deviation
+    \\\hline
+    mean MD & $mean_MD_prior_dist & $mean_MD_prior_params & $mean_MD_prior_mean & $mean_MD_prior_std
+    \\\hline
+    amplitude MD & $amplitude_MD_prior_dist & $amplitude_MD_prior_params & $amplitude_MD_prior_mean & $amplitude_MD_prior_std
+    \\\hline
+    length scale MD & $length_scale_MD_prior_dist & $length_scale_MD_prior_params & $length_scale_MD_prior_mean & $length_scale_MD_prior_std
+    \\\hline  
+  \end{tabular}
+  \caption{Prior PDF specification.}
+\end{table}
+\end{landscape}
+\end{document}

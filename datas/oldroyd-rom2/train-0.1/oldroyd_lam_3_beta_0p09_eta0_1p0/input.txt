@@ -1,0 +1,19 @@
+&comppar
+model        = 2
+lambda       = 3
+mobility     = 0.0
+betav        = 0.09
+eta_0        = 1.0
+U_avg        = 0.1
+planar       = .false.
+deltat       = 0.2
+numtimesteps = 2000
+dx_box       = 0.1
+dx_wall      = 0.1
+dx_inlet     = 0.1
+vtkevery     = 200
+stop_when_steady      = .true.
+steady_min_steps      = 80
+steady_height_steps   = 1
+steady_round_decimals = 3
+/

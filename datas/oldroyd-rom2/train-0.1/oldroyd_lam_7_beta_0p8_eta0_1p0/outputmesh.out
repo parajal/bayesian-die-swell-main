@@ -1,0 +1,31 @@
+Info    : Running 'gmsh -2 -order 2 -algo front2d -o mesh.msh mesh.geo' [Gmsh 4.15.0-git, 1 node, max. 1 thread]
+Info    : Started on Mon Sep 28 07:08:56 2026
+Info    : Reading 'mesh.geo'...
+Info    : Reading 'mesh_2D_bc.igo'...
+Info    : Done reading 'mesh_2D_bc.igo'
+Info    : Done reading 'mesh.geo'
+Info    : Meshing 1D...
+Info    : [  0%] Meshing curve 1 (Line)
+Info    : [ 20%] Meshing curve 2 (Line)
+Info    : [ 40%] Meshing curve 3 (Line)
+Info    : [ 60%] Meshing curve 4 (Line)
+Info    : [ 70%] Meshing curve 5 (Line)
+Info    : [ 90%] Meshing curve 6 (Line)
+Info    : Done meshing 1D (Wall 0.00893808s, CPU 0.002253s)
+Info    : Meshing 2D...
+Info    : Meshing surface 1 (Plane, Delaunay)
+Info    : Done meshing 2D (Wall 0.0213981s, CPU 0.020121s)
+Info    : Meshing order 2 (curvilinear on)...
+Info    : [  0%] Meshing curve 1 order 2
+Info    : [ 20%] Meshing curve 2 order 2
+Info    : [ 30%] Meshing curve 3 order 2
+Info    : [ 50%] Meshing curve 4 order 2
+Info    : [ 60%] Meshing curve 5 order 2
+Info    : [ 80%] Meshing curve 6 order 2
+Info    : [ 90%] Meshing surface 1 order 2
+Info    : Surface mesh: worst distortion = 1 (0 elements in ]0, 0.2]); worst gamma = 0.647181
+Info    : Done meshing order 2 (Wall 0.0111942s, CPU 0.004292s)
+Info    : 5798 nodes 3007 elements
+Info    : Writing 'mesh.msh'...
+Info    : Done writing 'mesh.msh'
+Info    : Stopped on Mon Sep 28 07:08:56 2026 (From start: Wall 0.0570821s, CPU 0.077815s)

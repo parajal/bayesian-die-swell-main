@@ -16,26 +16,35 @@ class Sampler:
         B = n * chain.mean(axis=0).var(axis=0, ddof=1)
         return np.sqrt(((n - 1) / n * W + B / n) / W)
 
+    @staticmethod
+    def _moves(points):
+        """0.6 stretch + 0.2 Gaussian random walk + 0.2 DE snooker. The Gaussian proposal
+        covariance is that of ``points`` (sampler coordinates) scaled by 2.38^2 / ndim."""
+        points = np.atleast_2d(points)
+        cov = np.cov(points, rowvar=False) * 2.38 ** 2 / points.shape[1]
+        return [(emcee.moves.StretchMove(), 0.6),
+                (emcee.moves.GaussianMove(cov), 0.2),
+                (emcee.moves.DESnookerMove(), 0.2)]
+
     def run_mcmc(self, nwalkers=10, nsteps=5000, burn_fraction=0.3,
                  warmup_fraction=0.1, ball_scale=0.2):
         np.random.seed(self.seed)
-        # Resolve l_bias='fixed' and/or set the sigma_bias prior from the discrepancy delta(x).
-        if (getattr(self, "l_bias", None) == "fixed"
-                or (self._infer_sigma_bias() and getattr(self, "sigma_bias_from_discrepancy", False))):
-            self.fix_l_bias_from_acf()
-        moves = [(emcee.moves.StretchMove(), 0.8),
-                (emcee.moves.DEMove(), 0.1),
-                (emcee.moves.GaussianMove(0.1), 0.1)]
-        moves = [(emcee.moves.StretchMove(), 1.0)]
-        sampler = emcee.EnsembleSampler(nwalkers, self._get_ndim(), self.log_posterior, moves=moves)
+        ndim = self._get_ndim()
         p0 = self.sample_starting_points(nwalkers)
+        self._print_walkers("Initial walkers", p0, n = nwalkers)
+        # warm-up: Gaussian covariance from the initial walkers
+        sampler = emcee.EnsembleSampler(nwalkers, ndim, self.log_posterior, moves=self._moves(p0))
 
         nwarm, nburn = int(warmup_fraction * nsteps), int(burn_fraction * nsteps)
         if nwarm:
             state = sampler.run_mcmc(p0, nwarm, progress=True)
             best = state.coords[np.argmax(state.log_prob)]
-            sampler.reset()
-            p0 = self.sample_starting_points(nwalkers, center=best, scale=ball_scale)
+            warm = sampler.get_chain(discard=nwarm // 2, flat=True)    # second half of the warm-up
+            # restart ball: ball_scale x each parameter's spread in the warm-up (not absolute)
+            p0 = self.sample_starting_points(nwalkers, center=best, scale=ball_scale * warm.std(axis=0))
+            self._print_walkers("Walkers restarted after warm-up", p0, n = nwalkers)
+            # main run: Gaussian covariance from the warm-up samples
+            sampler = emcee.EnsembleSampler(nwalkers, ndim, self.log_posterior, moves=self._moves(warm))
 
         sampler.run_mcmc(p0, nsteps, progress=True)
         self.chain = sampler.get_chain()
@@ -46,12 +55,23 @@ class Sampler:
         self.results = self.print_inference_results(nburn)
         return self.samples
 
+    def _print_walkers(self, title, p0, n = 10):
+        """Print the first n walker positions in physical space."""
+        names = self._get_parameter_labels(latex=False)
+        print(f"{title} (first {min(n, len(p0))} of {len(p0)}, physical space):")
+        print("  " + "".join(f"{name:>14}" for name in names))
+        for w in self._to_physical(np.asarray(p0)[:n]):
+            print("  " + "".join(f"{v:14.5g}" for v in w))
+
     def sample_starting_points(self, nwalkers, center=None, scale=1e-3, pool_factor=20):
         """Walker starts: KMeans centers of prior draws, or a Gaussian ball around center."""
         rng = np.random.default_rng(self.seed)
         n = pool_factor * nwalkers
-        if center is None:
-            pool = self._log_prior(rng, n)
+        if center is None:        # prior draws (sampler coordinates): uniform material, exponential sigmas
+            lo, hi = np.asarray(self._get_sampling_bounds(), float).T
+            rates = np.array([self.sigma_noise_prior] + [self.sigma_bias_prior] * self._infer_sigma_bias())
+            pool = np.hstack([rng.uniform(lo, hi, size=(n, len(lo))),
+                              rng.exponential(1 / rates, size=(n, len(rates)))])
         else:
             pool = center + scale * rng.standard_normal((n, len(center)))
         pool = pool[[np.isfinite(self.log_posterior(p)) for p in pool]]

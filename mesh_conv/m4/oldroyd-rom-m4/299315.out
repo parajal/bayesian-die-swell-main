@@ -1,0 +1,38 @@
+Module for Umbrella/2024 loaded successfully
+=== U_avg = 0.125  deltat = 0.64  Wi = 0.5  (/vast.mnt/home/20220558/rom-inference/mesh_conv/oldroyd-rom-m4/sweep_oldroyd_uavg/oldroyd_lam_1_beta_0p11111111111111111_uavg_0p125)
+=== U_avg = 0.25  deltat = 0.32  Wi = 1  (/vast.mnt/home/20220558/rom-inference/mesh_conv/oldroyd-rom-m4/sweep_oldroyd_uavg/oldroyd_lam_1_beta_0p11111111111111111_uavg_0p25)
+/var/spool/slurmd/job299315/slurm_script: line 63: 1523389 Floating point exception(core dumped) "$ROOTDIR/extrudate_swell" < input.txt > simulation.out 2>&1
+=== U_avg = 0.5  deltat = 0.16  Wi = 2  (/vast.mnt/home/20220558/rom-inference/mesh_conv/oldroyd-rom-m4/sweep_oldroyd_uavg/oldroyd_lam_1_beta_0p11111111111111111_uavg_0p5)
+/var/spool/slurmd/job299315/slurm_script: line 63: 1523413 Floating point exception(core dumped) "$ROOTDIR/extrudate_swell" < input.txt > simulation.out 2>&1
+# U_avg deltat Wi last_step max_height end_height
+0.125 0.64 0.5 130 1.14962836E+00 1.14947042E+00
+0.25 0.32 1 
+0.5 0.16 2 
+
+
+==============
+JOB STATISTICS
+==============
+
+JobID             State     AveRSS     MaxRSS 
+------------ ---------- ---------- ---------- 
+299315        COMPLETED                       
+299315.batch  COMPLETED    103364K    103364K 
+299315.exte+  COMPLETED                       
+
+Job ID: 299315
+Cluster: umbrella
+User/Group: 20220558/umbrella
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 15
+CPU Utilized: 00:00:51
+CPU Efficiency: 14.17% of 00:06:00 core-walltime
+Job Wall-clock time: 00:00:24
+Memory Utilized: 100.94 MB
+Memory Efficiency: 0.10% of 100.00 GB (100.00 GB/node)
+
+If "OOM Killed" appears in the job output, or if any job step state
+is "OUT_OF_MEMORY", you may have requested too little memory. Please
+see https://supercomputing.tue.nl/documentation/kb/slurm/6/ for more
+information.

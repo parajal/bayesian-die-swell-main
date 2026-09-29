@@ -1,0 +1,27 @@
+ dx_box  0.20000000000000001      dx_wall   6.2500000000000003E-003
+ comppar: model =   2
+ comppar: lambda,mobility/eps,betav,eta_0 =  1.0000E+00  0.0000E+00  1.1111E-01  1.0000E+00
+ comppar: eta_s,eta_p,G =  1.1111E-01  8.8889E-01  8.8889E-01
+ comppar: U_avg,deltat,flowrate,nsteps =  5.0000E-01  5.0000E-02  1.5708E+00    1000
+ comppar: geometry = axisymmetric
+ comppar: steady stop change,gap,hold,min =  1.0000E-05  5.0000E-03      10      80
+ comppar: ncompc,ncompg =     4     5
+ mesh nnodes = 143941
+ mesh nelem = 71786
+
+Program received signal SIGFPE: Floating-point exception - erroneous arithmetic operation.
+
+Backtrace for this error:
+#0  0x14934663fb2f in ???
+#1  0xd97ab6 in ???
+#2  0xd9d514 in ???
+#3  0x930140 in ???
+#4  0x8bf441 in ???
+#5  0x62aae0 in ???
+#6  0x638b63 in ???
+#7  0x41ad79 in ???
+#8  0x402526 in ???
+#9  0x14934662a60f in ???
+#10  0x14934662a6bf in ???
+#11  0x402554 in ???
+#12  0xffffffffffffffff in ???

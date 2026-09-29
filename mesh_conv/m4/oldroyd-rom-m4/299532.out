@@ -1,0 +1,36 @@
+Module for Umbrella/2024 loaded successfully
+=== U_avg = 0.125  deltat = 0.2  Wi = 0.5  (/vast.mnt/home/20220558/rom-inference/mesh_conv/oldroyd-rom-m4/sweep_oldroyd_uavg/oldroyd_lam_1_beta_0p11111111111111111_uavg_0p125)
+=== U_avg = 0.25  deltat = 0.1  Wi = 1  (/vast.mnt/home/20220558/rom-inference/mesh_conv/oldroyd-rom-m4/sweep_oldroyd_uavg/oldroyd_lam_1_beta_0p11111111111111111_uavg_0p25)
+=== U_avg = 0.5  deltat = 0.05  Wi = 2  (/vast.mnt/home/20220558/rom-inference/mesh_conv/oldroyd-rom-m4/sweep_oldroyd_uavg/oldroyd_lam_1_beta_0p11111111111111111_uavg_0p5)
+# U_avg deltat Wi last_step max_height end_height
+0.125 0.2 0.5 311 1.14669028E+00 1.14648525E+00
+0.25 0.1 1 394 1.23027124E+00 1.22995020E+00
+0.5 0.05 2 589 1.45504807E+00 1.45418910E+00
+
+
+==============
+JOB STATISTICS
+==============
+
+JobID             State     AveRSS     MaxRSS 
+------------ ---------- ---------- ---------- 
+299532        COMPLETED                       
+299532.batch  COMPLETED    113568K    113568K 
+299532.exte+  COMPLETED                       
+
+Job ID: 299532
+Cluster: umbrella
+User/Group: 20220558/umbrella
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 15
+CPU Utilized: 00:09:47
+CPU Efficiency: 16.80% of 00:58:15 core-walltime
+Job Wall-clock time: 00:03:53
+Memory Utilized: 110.91 MB
+Memory Efficiency: 0.11% of 100.00 GB (100.00 GB/node)
+
+If "OOM Killed" appears in the job output, or if any job step state
+is "OUT_OF_MEMORY", you may have requested too little memory. Please
+see https://supercomputing.tue.nl/documentation/kb/slurm/6/ for more
+information.

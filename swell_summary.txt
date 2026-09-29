@@ -1,0 +1,5 @@
+# dx_box   dx_wall  nsteps  nnodes   nelem    step    max_height       end_height       time_s   status
+  0.4      0.04     2000    843      388      2000    1.18425472E+00   1.18392328E+00   197      completed
+  0.4      0.02     2000    1321     622      2000    1.18620735E+00   1.18587500E+00   334      completed
+  0.4      0.01     2000    2451     1180     2000    1.18786736E+00   1.18754734E+00   392      completed
+  0.4      0.005    2000    5777     2830     2000    1.18972480E+00   1.18939240E+00   567      completed

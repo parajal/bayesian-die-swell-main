@@ -1,0 +1,458 @@
+Module for Umbrella/2024 loaded successfully
+/sw/rl8/zen/app/gmsh/4.15.0-foss-2025a/bin/gmsh
+4.15.0-git
+MKLROOT = /sw/rl8/zen/app/imkl/2025.1.0/mkl/2025.1
+=================================
+[1/660] Oldroyd-B  lambda = 0.2   beta = 0.05   eta0 = 0.6   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p05_eta0_0p6
+=================================
+Finished oldroyd_lam_0p2_beta_0p05_eta0_0p6 : Sr_end=1.12290325E+00  Sr_max=1.12304027E+00  (step 1000)
+=================================
+[2/660] Oldroyd-B  lambda = 0.2   beta = 0.05   eta0 = 0.8   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p05_eta0_0p8
+=================================
+Finished oldroyd_lam_0p2_beta_0p05_eta0_0p8 : Sr_end=1.12290325E+00  Sr_max=1.12304027E+00  (step 1000)
+=================================
+[3/660] Oldroyd-B  lambda = 0.2   beta = 0.05   eta0 = 0.9   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p05_eta0_0p9
+=================================
+Finished oldroyd_lam_0p2_beta_0p05_eta0_0p9 : Sr_end=1.12290325E+00  Sr_max=1.12304027E+00  (step 1000)
+=================================
+[4/660] Oldroyd-B  lambda = 0.2   beta = 0.05   eta0 = 1.0   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p05_eta0_1p0
+=================================
+Finished oldroyd_lam_0p2_beta_0p05_eta0_1p0 : Sr_end=1.12290325E+00  Sr_max=1.12304027E+00  (step 1000)
+=================================
+[5/660] Oldroyd-B  lambda = 0.2   beta = 0.05   eta0 = 1.1   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p05_eta0_1p1
+=================================
+Finished oldroyd_lam_0p2_beta_0p05_eta0_1p1 : Sr_end=1.12290325E+00  Sr_max=1.12304027E+00  (step 1000)
+=================================
+[6/660] Oldroyd-B  lambda = 0.2   beta = 0.06   eta0 = 0.6   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p06_eta0_0p6
+=================================
+Finished oldroyd_lam_0p2_beta_0p06_eta0_0p6 : Sr_end=1.12295786E+00  Sr_max=1.12309488E+00  (step 1000)
+=================================
+[7/660] Oldroyd-B  lambda = 0.2   beta = 0.06   eta0 = 0.8   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p06_eta0_0p8
+=================================
+Finished oldroyd_lam_0p2_beta_0p06_eta0_0p8 : Sr_end=1.12295786E+00  Sr_max=1.12309488E+00  (step 1000)
+=================================
+[8/660] Oldroyd-B  lambda = 0.2   beta = 0.06   eta0 = 0.9   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p06_eta0_0p9
+=================================
+Finished oldroyd_lam_0p2_beta_0p06_eta0_0p9 : Sr_end=1.12295786E+00  Sr_max=1.12309488E+00  (step 1000)
+=================================
+[9/660] Oldroyd-B  lambda = 0.2   beta = 0.06   eta0 = 1.0   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p06_eta0_1p0
+=================================
+Finished oldroyd_lam_0p2_beta_0p06_eta0_1p0 : Sr_end=1.12295786E+00  Sr_max=1.12309488E+00  (step 1000)
+=================================
+[10/660] Oldroyd-B  lambda = 0.2   beta = 0.06   eta0 = 1.1   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p06_eta0_1p1
+=================================
+Finished oldroyd_lam_0p2_beta_0p06_eta0_1p1 : Sr_end=1.12295786E+00  Sr_max=1.12309488E+00  (step 1000)
+=================================
+[11/660] Oldroyd-B  lambda = 0.2   beta = 0.07   eta0 = 0.6   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p07_eta0_0p6
+=================================
+Finished oldroyd_lam_0p2_beta_0p07_eta0_0p6 : Sr_end=1.12301257E+00  Sr_max=1.12314959E+00  (step 1000)
+=================================
+[12/660] Oldroyd-B  lambda = 0.2   beta = 0.07   eta0 = 0.8   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p07_eta0_0p8
+=================================
+Finished oldroyd_lam_0p2_beta_0p07_eta0_0p8 : Sr_end=1.12301257E+00  Sr_max=1.12314959E+00  (step 1000)
+=================================
+[13/660] Oldroyd-B  lambda = 0.2   beta = 0.07   eta0 = 0.9   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p07_eta0_0p9
+=================================
+Finished oldroyd_lam_0p2_beta_0p07_eta0_0p9 : Sr_end=1.12301257E+00  Sr_max=1.12314959E+00  (step 1000)
+=================================
+[14/660] Oldroyd-B  lambda = 0.2   beta = 0.07   eta0 = 1.0   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p07_eta0_1p0
+=================================
+Finished oldroyd_lam_0p2_beta_0p07_eta0_1p0 : Sr_end=1.12301257E+00  Sr_max=1.12314959E+00  (step 1000)
+=================================
+[15/660] Oldroyd-B  lambda = 0.2   beta = 0.07   eta0 = 1.1   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p07_eta0_1p1
+=================================
+Finished oldroyd_lam_0p2_beta_0p07_eta0_1p1 : Sr_end=1.12301257E+00  Sr_max=1.12314959E+00  (step 1000)
+=================================
+[16/660] Oldroyd-B  lambda = 0.2   beta = 0.08   eta0 = 0.6   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p08_eta0_0p6
+=================================
+Finished oldroyd_lam_0p2_beta_0p08_eta0_0p6 : Sr_end=1.12306737E+00  Sr_max=1.12320440E+00  (step 1000)
+=================================
+[17/660] Oldroyd-B  lambda = 0.2   beta = 0.08   eta0 = 0.8   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p08_eta0_0p8
+=================================
+Finished oldroyd_lam_0p2_beta_0p08_eta0_0p8 : Sr_end=1.12306737E+00  Sr_max=1.12320440E+00  (step 1000)
+=================================
+[18/660] Oldroyd-B  lambda = 0.2   beta = 0.08   eta0 = 0.9   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p08_eta0_0p9
+=================================
+Finished oldroyd_lam_0p2_beta_0p08_eta0_0p9 : Sr_end=1.12306737E+00  Sr_max=1.12320440E+00  (step 1000)
+=================================
+[19/660] Oldroyd-B  lambda = 0.2   beta = 0.08   eta0 = 1.0   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p08_eta0_1p0
+=================================
+Finished oldroyd_lam_0p2_beta_0p08_eta0_1p0 : Sr_end=1.12306737E+00  Sr_max=1.12320440E+00  (step 1000)
+=================================
+[20/660] Oldroyd-B  lambda = 0.2   beta = 0.08   eta0 = 1.1   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p08_eta0_1p1
+=================================
+Finished oldroyd_lam_0p2_beta_0p08_eta0_1p1 : Sr_end=1.12306737E+00  Sr_max=1.12320440E+00  (step 1000)
+=================================
+[21/660] Oldroyd-B  lambda = 0.2   beta = 0.09   eta0 = 0.6   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p09_eta0_0p6
+=================================
+Finished oldroyd_lam_0p2_beta_0p09_eta0_0p6 : Sr_end=1.12312227E+00  Sr_max=1.12325930E+00  (step 1000)
+=================================
+[22/660] Oldroyd-B  lambda = 0.2   beta = 0.09   eta0 = 0.8   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p09_eta0_0p8
+=================================
+Finished oldroyd_lam_0p2_beta_0p09_eta0_0p8 : Sr_end=1.12312227E+00  Sr_max=1.12325930E+00  (step 1000)
+=================================
+[23/660] Oldroyd-B  lambda = 0.2   beta = 0.09   eta0 = 0.9   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p09_eta0_0p9
+=================================
+Finished oldroyd_lam_0p2_beta_0p09_eta0_0p9 : Sr_end=1.12312227E+00  Sr_max=1.12325930E+00  (step 1000)
+=================================
+[24/660] Oldroyd-B  lambda = 0.2   beta = 0.09   eta0 = 1.0   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p09_eta0_1p0
+=================================
+Finished oldroyd_lam_0p2_beta_0p09_eta0_1p0 : Sr_end=1.12312227E+00  Sr_max=1.12325930E+00  (step 1000)
+=================================
+[25/660] Oldroyd-B  lambda = 0.2   beta = 0.09   eta0 = 1.1   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p09_eta0_1p1
+=================================
+Finished oldroyd_lam_0p2_beta_0p09_eta0_1p1 : Sr_end=1.12312227E+00  Sr_max=1.12325930E+00  (step 1000)
+=================================
+[26/660] Oldroyd-B  lambda = 0.2   beta = 0.1   eta0 = 0.6   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p1_eta0_0p6
+=================================
+Finished oldroyd_lam_0p2_beta_0p1_eta0_0p6 : Sr_end=1.12317727E+00  Sr_max=1.12331429E+00  (step 1000)
+=================================
+[27/660] Oldroyd-B  lambda = 0.2   beta = 0.1   eta0 = 0.8   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p1_eta0_0p8
+=================================
+Finished oldroyd_lam_0p2_beta_0p1_eta0_0p8 : Sr_end=1.12317727E+00  Sr_max=1.12331429E+00  (step 1000)
+=================================
+[28/660] Oldroyd-B  lambda = 0.2   beta = 0.1   eta0 = 0.9   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p1_eta0_0p9
+=================================
+Finished oldroyd_lam_0p2_beta_0p1_eta0_0p9 : Sr_end=1.12317727E+00  Sr_max=1.12331429E+00  (step 1000)
+=================================
+[29/660] Oldroyd-B  lambda = 0.2   beta = 0.1   eta0 = 1.0   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p1_eta0_1p0
+=================================
+Finished oldroyd_lam_0p2_beta_0p1_eta0_1p0 : Sr_end=1.12317727E+00  Sr_max=1.12331429E+00  (step 1000)
+=================================
+[30/660] Oldroyd-B  lambda = 0.2   beta = 0.1   eta0 = 1.1   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p1_eta0_1p1
+=================================
+Finished oldroyd_lam_0p2_beta_0p1_eta0_1p1 : Sr_end=1.12317727E+00  Sr_max=1.12331429E+00  (step 1000)
+=================================
+[31/660] Oldroyd-B  lambda = 0.2   beta = 0.2   eta0 = 0.6   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p2_eta0_0p6
+=================================
+Finished oldroyd_lam_0p2_beta_0p2_eta0_0p6 : Sr_end=1.12373253E+00  Sr_max=1.12386959E+00  (step 1000)
+=================================
+[32/660] Oldroyd-B  lambda = 0.2   beta = 0.2   eta0 = 0.8   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p2_eta0_0p8
+=================================
+Finished oldroyd_lam_0p2_beta_0p2_eta0_0p8 : Sr_end=1.12373253E+00  Sr_max=1.12386959E+00  (step 1000)
+=================================
+[33/660] Oldroyd-B  lambda = 0.2   beta = 0.2   eta0 = 0.9   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p2_eta0_0p9
+=================================
+Finished oldroyd_lam_0p2_beta_0p2_eta0_0p9 : Sr_end=1.12373253E+00  Sr_max=1.12386959E+00  (step 1000)
+=================================
+[34/660] Oldroyd-B  lambda = 0.2   beta = 0.2   eta0 = 1.0   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p2_eta0_1p0
+=================================
+Finished oldroyd_lam_0p2_beta_0p2_eta0_1p0 : Sr_end=1.12373253E+00  Sr_max=1.12386959E+00  (step 1000)
+=================================
+[35/660] Oldroyd-B  lambda = 0.2   beta = 0.2   eta0 = 1.1   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p2_eta0_1p1
+=================================
+Finished oldroyd_lam_0p2_beta_0p2_eta0_1p1 : Sr_end=1.12373253E+00  Sr_max=1.12386959E+00  (step 1000)
+=================================
+[36/660] Oldroyd-B  lambda = 0.2   beta = 0.4   eta0 = 0.6   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p4_eta0_0p6
+=================================
+Finished oldroyd_lam_0p2_beta_0p4_eta0_0p6 : Sr_end=1.12487285E+00  Sr_max=1.12501001E+00  (step 1000)
+=================================
+[37/660] Oldroyd-B  lambda = 0.2   beta = 0.4   eta0 = 0.8   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p4_eta0_0p8
+=================================
+Finished oldroyd_lam_0p2_beta_0p4_eta0_0p8 : Sr_end=1.12487285E+00  Sr_max=1.12501001E+00  (step 1000)
+=================================
+[38/660] Oldroyd-B  lambda = 0.2   beta = 0.4   eta0 = 0.9   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p4_eta0_0p9
+=================================
+Finished oldroyd_lam_0p2_beta_0p4_eta0_0p9 : Sr_end=1.12487285E+00  Sr_max=1.12501001E+00  (step 1000)
+=================================
+[39/660] Oldroyd-B  lambda = 0.2   beta = 0.4   eta0 = 1.0   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p4_eta0_1p0
+=================================
+Finished oldroyd_lam_0p2_beta_0p4_eta0_1p0 : Sr_end=1.12487285E+00  Sr_max=1.12501001E+00  (step 1000)
+=================================
+[40/660] Oldroyd-B  lambda = 0.2   beta = 0.4   eta0 = 1.1   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p4_eta0_1p1
+=================================
+Finished oldroyd_lam_0p2_beta_0p4_eta0_1p1 : Sr_end=1.12487285E+00  Sr_max=1.12501001E+00  (step 1000)
+=================================
+[41/660] Oldroyd-B  lambda = 0.2   beta = 0.6   eta0 = 0.6   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p6_eta0_0p6
+=================================
+Finished oldroyd_lam_0p2_beta_0p6_eta0_0p6 : Sr_end=1.12605415E+00  Sr_max=1.12619140E+00  (step 1000)
+=================================
+[42/660] Oldroyd-B  lambda = 0.2   beta = 0.6   eta0 = 0.8   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p6_eta0_0p8
+=================================
+Finished oldroyd_lam_0p2_beta_0p6_eta0_0p8 : Sr_end=1.12605415E+00  Sr_max=1.12619140E+00  (step 1000)
+=================================
+[43/660] Oldroyd-B  lambda = 0.2   beta = 0.6   eta0 = 0.9   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p6_eta0_0p9
+=================================
+Finished oldroyd_lam_0p2_beta_0p6_eta0_0p9 : Sr_end=1.12605415E+00  Sr_max=1.12619140E+00  (step 1000)
+=================================
+[44/660] Oldroyd-B  lambda = 0.2   beta = 0.6   eta0 = 1.0   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p6_eta0_1p0
+=================================
+Finished oldroyd_lam_0p2_beta_0p6_eta0_1p0 : Sr_end=1.12605415E+00  Sr_max=1.12619140E+00  (step 1000)
+=================================
+[45/660] Oldroyd-B  lambda = 0.2   beta = 0.6   eta0 = 1.1   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p6_eta0_1p1
+=================================
+Finished oldroyd_lam_0p2_beta_0p6_eta0_1p1 : Sr_end=1.12605415E+00  Sr_max=1.12619140E+00  (step 1000)
+=================================
+[46/660] Oldroyd-B  lambda = 0.2   beta = 0.8   eta0 = 0.6   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p8_eta0_0p6
+=================================
+Finished oldroyd_lam_0p2_beta_0p8_eta0_0p6 : Sr_end=1.12727691E+00  Sr_max=1.12741423E+00  (step 1000)
+=================================
+[47/660] Oldroyd-B  lambda = 0.2   beta = 0.8   eta0 = 0.8   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p8_eta0_0p8
+=================================
+Finished oldroyd_lam_0p2_beta_0p8_eta0_0p8 : Sr_end=1.12727691E+00  Sr_max=1.12741423E+00  (step 1000)
+=================================
+[48/660] Oldroyd-B  lambda = 0.2   beta = 0.8   eta0 = 0.9   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p8_eta0_0p9
+=================================
+Finished oldroyd_lam_0p2_beta_0p8_eta0_0p9 : Sr_end=1.12727691E+00  Sr_max=1.12741423E+00  (step 1000)
+=================================
+[49/660] Oldroyd-B  lambda = 0.2   beta = 0.8   eta0 = 1.0   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p8_eta0_1p0
+=================================
+Finished oldroyd_lam_0p2_beta_0p8_eta0_1p0 : Sr_end=1.12727691E+00  Sr_max=1.12741423E+00  (step 1000)
+=================================
+[50/660] Oldroyd-B  lambda = 0.2   beta = 0.8   eta0 = 1.1   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p8_eta0_1p1
+=================================
+Finished oldroyd_lam_0p2_beta_0p8_eta0_1p1 : Sr_end=1.12727691E+00  Sr_max=1.12741423E+00  (step 1000)
+=================================
+[51/660] Oldroyd-B  lambda = 0.2   beta = 0.95   eta0 = 0.6   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p95_eta0_0p6
+=================================
+Finished oldroyd_lam_0p2_beta_0p95_eta0_0p6 : Sr_end=1.12822029E+00  Sr_max=1.12835766E+00  (step 1000)
+=================================
+[52/660] Oldroyd-B  lambda = 0.2   beta = 0.95   eta0 = 0.8   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p95_eta0_0p8
+=================================
+Finished oldroyd_lam_0p2_beta_0p95_eta0_0p8 : Sr_end=1.12822029E+00  Sr_max=1.12835766E+00  (step 1000)
+=================================
+[53/660] Oldroyd-B  lambda = 0.2   beta = 0.95   eta0 = 0.9   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p95_eta0_0p9
+=================================
+Finished oldroyd_lam_0p2_beta_0p95_eta0_0p9 : Sr_end=1.12822029E+00  Sr_max=1.12835766E+00  (step 1000)
+=================================
+[54/660] Oldroyd-B  lambda = 0.2   beta = 0.95   eta0 = 1.0   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p95_eta0_1p0
+=================================
+Finished oldroyd_lam_0p2_beta_0p95_eta0_1p0 : Sr_end=1.12822029E+00  Sr_max=1.12835766E+00  (step 1000)
+=================================
+[55/660] Oldroyd-B  lambda = 0.2   beta = 0.95   eta0 = 1.1   (Wi = 0.0600)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p2_beta_0p95_eta0_1p1
+=================================
+Finished oldroyd_lam_0p2_beta_0p95_eta0_1p1 : Sr_end=1.12822029E+00  Sr_max=1.12835766E+00  (step 1000)
+=================================
+[56/660] Oldroyd-B  lambda = 0.5   beta = 0.05   eta0 = 0.6   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p05_eta0_0p6
+=================================
+Finished oldroyd_lam_0p5_beta_0p05_eta0_0p6 : Sr_end=1.12197728E+00  Sr_max=1.12211810E+00  (step 1000)
+=================================
+[57/660] Oldroyd-B  lambda = 0.5   beta = 0.05   eta0 = 0.8   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p05_eta0_0p8
+=================================
+Finished oldroyd_lam_0p5_beta_0p05_eta0_0p8 : Sr_end=1.12197728E+00  Sr_max=1.12211810E+00  (step 1000)
+=================================
+[58/660] Oldroyd-B  lambda = 0.5   beta = 0.05   eta0 = 0.9   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p05_eta0_0p9
+=================================
+Finished oldroyd_lam_0p5_beta_0p05_eta0_0p9 : Sr_end=1.12197728E+00  Sr_max=1.12211810E+00  (step 1000)
+=================================
+[59/660] Oldroyd-B  lambda = 0.5   beta = 0.05   eta0 = 1.0   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p05_eta0_1p0
+=================================
+Finished oldroyd_lam_0p5_beta_0p05_eta0_1p0 : Sr_end=1.12197728E+00  Sr_max=1.12211810E+00  (step 1000)
+=================================
+[60/660] Oldroyd-B  lambda = 0.5   beta = 0.05   eta0 = 1.1   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p05_eta0_1p1
+=================================
+Finished oldroyd_lam_0p5_beta_0p05_eta0_1p1 : Sr_end=1.12197728E+00  Sr_max=1.12211810E+00  (step 1000)
+=================================
+[61/660] Oldroyd-B  lambda = 0.5   beta = 0.06   eta0 = 0.6   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p06_eta0_0p6
+=================================
+Finished oldroyd_lam_0p5_beta_0p06_eta0_0p6 : Sr_end=1.12202662E+00  Sr_max=1.12216742E+00  (step 1000)
+=================================
+[62/660] Oldroyd-B  lambda = 0.5   beta = 0.06   eta0 = 0.8   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p06_eta0_0p8
+=================================
+Finished oldroyd_lam_0p5_beta_0p06_eta0_0p8 : Sr_end=1.12202662E+00  Sr_max=1.12216742E+00  (step 1000)
+=================================
+[63/660] Oldroyd-B  lambda = 0.5   beta = 0.06   eta0 = 0.9   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p06_eta0_0p9
+=================================
+Finished oldroyd_lam_0p5_beta_0p06_eta0_0p9 : Sr_end=1.12202662E+00  Sr_max=1.12216742E+00  (step 1000)
+=================================
+[64/660] Oldroyd-B  lambda = 0.5   beta = 0.06   eta0 = 1.0   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p06_eta0_1p0
+=================================
+Finished oldroyd_lam_0p5_beta_0p06_eta0_1p0 : Sr_end=1.12202662E+00  Sr_max=1.12216742E+00  (step 1000)
+=================================
+[65/660] Oldroyd-B  lambda = 0.5   beta = 0.06   eta0 = 1.1   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p06_eta0_1p1
+=================================
+Finished oldroyd_lam_0p5_beta_0p06_eta0_1p1 : Sr_end=1.12202662E+00  Sr_max=1.12216742E+00  (step 1000)
+=================================
+[66/660] Oldroyd-B  lambda = 0.5   beta = 0.07   eta0 = 0.6   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p07_eta0_0p6
+=================================
+Finished oldroyd_lam_0p5_beta_0p07_eta0_0p6 : Sr_end=1.12207620E+00  Sr_max=1.12221695E+00  (step 1000)
+=================================
+[67/660] Oldroyd-B  lambda = 0.5   beta = 0.07   eta0 = 0.8   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p07_eta0_0p8
+=================================
+Finished oldroyd_lam_0p5_beta_0p07_eta0_0p8 : Sr_end=1.12207620E+00  Sr_max=1.12221695E+00  (step 1000)
+=================================
+[68/660] Oldroyd-B  lambda = 0.5   beta = 0.07   eta0 = 0.9   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p07_eta0_0p9
+=================================
+Finished oldroyd_lam_0p5_beta_0p07_eta0_0p9 : Sr_end=1.12207620E+00  Sr_max=1.12221695E+00  (step 1000)
+=================================
+[69/660] Oldroyd-B  lambda = 0.5   beta = 0.07   eta0 = 1.0   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p07_eta0_1p0
+=================================
+Finished oldroyd_lam_0p5_beta_0p07_eta0_1p0 : Sr_end=1.12207620E+00  Sr_max=1.12221695E+00  (step 1000)
+=================================
+[70/660] Oldroyd-B  lambda = 0.5   beta = 0.07   eta0 = 1.1   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p07_eta0_1p1
+=================================
+Finished oldroyd_lam_0p5_beta_0p07_eta0_1p1 : Sr_end=1.12207620E+00  Sr_max=1.12221695E+00  (step 1000)
+=================================
+[71/660] Oldroyd-B  lambda = 0.5   beta = 0.08   eta0 = 0.6   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p08_eta0_0p6
+=================================
+Finished oldroyd_lam_0p5_beta_0p08_eta0_0p6 : Sr_end=1.12212600E+00  Sr_max=1.12226672E+00  (step 1000)
+=================================
+[72/660] Oldroyd-B  lambda = 0.5   beta = 0.08   eta0 = 0.8   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p08_eta0_0p8
+=================================
+Finished oldroyd_lam_0p5_beta_0p08_eta0_0p8 : Sr_end=1.12212600E+00  Sr_max=1.12226672E+00  (step 1000)
+=================================
+[73/660] Oldroyd-B  lambda = 0.5   beta = 0.08   eta0 = 0.9   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p08_eta0_0p9
+=================================
+Finished oldroyd_lam_0p5_beta_0p08_eta0_0p9 : Sr_end=1.12212600E+00  Sr_max=1.12226672E+00  (step 1000)
+=================================
+[74/660] Oldroyd-B  lambda = 0.5   beta = 0.08   eta0 = 1.0   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p08_eta0_1p0
+=================================
+Finished oldroyd_lam_0p5_beta_0p08_eta0_1p0 : Sr_end=1.12212600E+00  Sr_max=1.12226672E+00  (step 1000)
+=================================
+[75/660] Oldroyd-B  lambda = 0.5   beta = 0.08   eta0 = 1.1   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p08_eta0_1p1
+=================================
+Finished oldroyd_lam_0p5_beta_0p08_eta0_1p1 : Sr_end=1.12212600E+00  Sr_max=1.12226672E+00  (step 1000)
+=================================
+[76/660] Oldroyd-B  lambda = 0.5   beta = 0.09   eta0 = 0.6   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p09_eta0_0p6
+=================================
+Finished oldroyd_lam_0p5_beta_0p09_eta0_0p6 : Sr_end=1.12217603E+00  Sr_max=1.12231672E+00  (step 1000)
+=================================
+[77/660] Oldroyd-B  lambda = 0.5   beta = 0.09   eta0 = 0.8   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p09_eta0_0p8
+=================================
+Finished oldroyd_lam_0p5_beta_0p09_eta0_0p8 : Sr_end=1.12217603E+00  Sr_max=1.12231672E+00  (step 1000)
+=================================
+[78/660] Oldroyd-B  lambda = 0.5   beta = 0.09   eta0 = 0.9   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p09_eta0_0p9
+=================================
+Finished oldroyd_lam_0p5_beta_0p09_eta0_0p9 : Sr_end=1.12217603E+00  Sr_max=1.12231672E+00  (step 1000)
+=================================
+[79/660] Oldroyd-B  lambda = 0.5   beta = 0.09   eta0 = 1.0   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p09_eta0_1p0
+=================================
+Finished oldroyd_lam_0p5_beta_0p09_eta0_1p0 : Sr_end=1.12217603E+00  Sr_max=1.12231672E+00  (step 1000)
+=================================
+[80/660] Oldroyd-B  lambda = 0.5   beta = 0.09   eta0 = 1.1   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p09_eta0_1p1
+=================================
+Finished oldroyd_lam_0p5_beta_0p09_eta0_1p1 : Sr_end=1.12217603E+00  Sr_max=1.12231672E+00  (step 1000)
+=================================
+[81/660] Oldroyd-B  lambda = 0.5   beta = 0.1   eta0 = 0.6   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p1_eta0_0p6
+=================================
+Finished oldroyd_lam_0p5_beta_0p1_eta0_0p6 : Sr_end=1.12222631E+00  Sr_max=1.12236696E+00  (step 1000)
+=================================
+[82/660] Oldroyd-B  lambda = 0.5   beta = 0.1   eta0 = 0.8   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p1_eta0_0p8
+=================================
+Finished oldroyd_lam_0p5_beta_0p1_eta0_0p8 : Sr_end=1.12222631E+00  Sr_max=1.12236696E+00  (step 1000)
+=================================
+[83/660] Oldroyd-B  lambda = 0.5   beta = 0.1   eta0 = 0.9   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p1_eta0_0p9
+=================================
+Finished oldroyd_lam_0p5_beta_0p1_eta0_0p9 : Sr_end=1.12222631E+00  Sr_max=1.12236696E+00  (step 1000)
+=================================
+[84/660] Oldroyd-B  lambda = 0.5   beta = 0.1   eta0 = 1.0   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p1_eta0_1p0
+=================================
+Finished oldroyd_lam_0p5_beta_0p1_eta0_1p0 : Sr_end=1.12222631E+00  Sr_max=1.12236696E+00  (step 1000)
+=================================
+[85/660] Oldroyd-B  lambda = 0.5   beta = 0.1   eta0 = 1.1   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p1_eta0_1p1
+=================================
+Finished oldroyd_lam_0p5_beta_0p1_eta0_1p1 : Sr_end=1.12222631E+00  Sr_max=1.12236696E+00  (step 1000)
+=================================
+[86/660] Oldroyd-B  lambda = 0.5   beta = 0.2   eta0 = 0.6   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p2_eta0_0p6
+=================================
+Finished oldroyd_lam_0p5_beta_0p2_eta0_0p6 : Sr_end=1.12274405E+00  Sr_max=1.12288433E+00  (step 1000)
+=================================
+[87/660] Oldroyd-B  lambda = 0.5   beta = 0.2   eta0 = 0.8   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p2_eta0_0p8
+=================================
+Finished oldroyd_lam_0p5_beta_0p2_eta0_0p8 : Sr_end=1.12274405E+00  Sr_max=1.12288433E+00  (step 1000)
+=================================
+[88/660] Oldroyd-B  lambda = 0.5   beta = 0.2   eta0 = 0.9   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p2_eta0_0p9
+=================================
+Finished oldroyd_lam_0p5_beta_0p2_eta0_0p9 : Sr_end=1.12274405E+00  Sr_max=1.12288433E+00  (step 1000)
+=================================
+[89/660] Oldroyd-B  lambda = 0.5   beta = 0.2   eta0 = 1.0   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p2_eta0_1p0
+=================================
+Finished oldroyd_lam_0p5_beta_0p2_eta0_1p0 : Sr_end=1.12274405E+00  Sr_max=1.12288433E+00  (step 1000)
+=================================
+[90/660] Oldroyd-B  lambda = 0.5   beta = 0.2   eta0 = 1.1   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p2_eta0_1p1
+=================================
+Finished oldroyd_lam_0p5_beta_0p2_eta0_1p1 : Sr_end=1.12274405E+00  Sr_max=1.12288433E+00  (step 1000)
+=================================
+[91/660] Oldroyd-B  lambda = 0.5   beta = 0.4   eta0 = 0.6   (Wi = 0.1500)
+dir = /vast.mnt/home/20220558/rom-inference/oldroyd-rom/sweep_oldroyd/oldroyd_lam_0p5_beta_0p4_eta0_0p6
+=================================

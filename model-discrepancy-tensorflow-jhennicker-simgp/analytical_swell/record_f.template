@@ -1,0 +1,36 @@
+\documentclass{article}
+
+\usepackage{pdflscape}
+
+\begin{document}
+\begin{table}[h]
+  \centering
+  \begin{tabular}{lcc}
+    & Posterior & Prior 
+    \\\hline
+    theta mean & $theta_mean & $theta_prior_mean
+    \\\hline
+    theta stddev & $theta_std & $theta_prior_std
+    \\\hline  
+  \end{tabular}
+  \caption{Pure SIM. Summary statistics on the parameters.
+    Nb of exp. obs.: $NbObs_EXP ;
+    Nb of pred.: $NbPred ;
+    Nb of MCMC samples: $num_results ;
+    Nb of PPC samples per MCMC sample: $nsamples_per_mcmc_sample ;
+    MCMC acceptance ratio: $p_accept .}
+\end{table}
+
+\begin{landscape}
+\begin{table}[h]
+  \centering
+  \begin{tabular}{lcccc}
+    & Distribution & Parameters & Mean & Standard deviation
+    \\\hline
+    theta  & $theta_prior_dist & $theta_prior_params & $theta_prior_mean & $theta_prior_std
+    \\\hline
+  \end{tabular}
+  \caption{Prior PDF specification.}
+\end{table}
+\end{landscape}
+\end{document}
