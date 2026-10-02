@@ -1,20 +1,21 @@
 # data         : datas/oldroyd-rom1/infer-0.05/giesekus_lam_5_beta_0p5_alpha_0p1
-# fitted model : oldroyd, parametrize=False, sigma_bias=True, l_bias=0.5, noise 2 %
+# fitted model : oldroyd, parametrize=True, sigma_bias=True, l_bias inferred U(0.1, 1.0), noise 2 %
 #
 # true parameters
 # (not given)
 #
 # inferred parameters
 # name                 mean     Rhat      ci90_low     ci90_high
-lambda           2.8527e+00    1.003    2.6281e+00    3.3184e+00
-beta             2.9501e-01    1.002    9.7872e-02    5.8532e-01
-sigma_noise      2.6715e-03    1.001    2.2962e-03    3.1024e-03
-sigma_bias       1.2754e-03    1.001    1.5041e-04    2.7275e-03
+theta1           2.1966e+00    1.017    1.8304e+00    2.3974e+00
+theta2           1.8500e-01    1.009    8.5884e-02    3.6945e-01
+sigma_noise      2.7262e-03    1.003    2.4650e-03    3.0048e-03
+sigma_bias       1.1047e-03    1.004    2.0439e-04    2.2861e-03
+l_bias           6.4594e-01    1.003    2.3682e-01    9.6271e-01
 #
 # derived quantities at U_avg = 0.05  (S_R = N1 / tau_w = 2 (1 - beta) lambda gammadot_w, N1 = S_R tau_w, tau_w = R |dp/dx| / 2)
 # name                 mean      ci90_low     ci90_high
-E[N1]            1.4847e-01    1.0314e-01    1.7837e-01
-E[S_R]           7.9137e-01    5.4979e-01    9.5075e-01
+E[N1]            1.6484e-01    1.3736e-01    1.7991e-01
+E[S_R]           8.7863e-01    7.3217e-01    9.5896e-01
 gammadot_w       2.0000e-01    # 4 U_avg / R (4 U_avg / R = 0.2)
 N1_true          1.5180e-01    # FEM wall N1 from curve5_0002.txt, mean over -3 <= x <= -1
 S_R_true         8.0914e-01    # N1_true / tau_w, tau_w = R |dp/dx| / 2 from pressure_drop.txt

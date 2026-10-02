@@ -9,9 +9,6 @@ class LikelihoodMixin:
 
     @staticmethod
     def _residual_logprob(residual, sigma, sigma_bias=None, eig=None, K=None):
-        """log N(residual | 0, sigma^2 I), or log N(residual | 0, sigma^2 I + sigma_bias^2 K') with
-        K' given by its cached eigen-decomposition eig = (w, V), C = V diag(sigma^2 + sigma_bias^2 w) V^T,
-        or, when K' changes with every point (inferred l_bias), as the matrix K (Cholesky of C)."""
         n = len(residual)
         if K is not None:
             c = cho_factor(sigma**2 * np.eye(n) + sigma_bias**2 * K, lower=True)
@@ -28,9 +25,6 @@ class LikelihoodMixin:
         return -0.5 * (r2 + logdet + n * np.log(2 * np.pi))
 
     def _bias_correlation_matrix(self, x, l_bias) -> np.ndarray:
-        """Bias correlation K' at the points x: squared exponential with length l_bias, conditioned
-        (constrained_model_error=True) on delta(0) = 0 and delta'(x) = 0 at bias_gradient_points.
-        Cached for the last (l_bias, constraints, x); returned read-only."""
         x = np.asarray(x, dtype=float).ravel()
         constrained = bool(getattr(self, "constrained_model_error", False))
         Dc = np.asarray(self.bias_gradient_points, float) if constrained else np.empty(0)
@@ -67,12 +61,9 @@ class LikelihoodMixin:
         return cached[1]
 
     def _residuals(self, theta):
-        """Observed minus model at the material parameters of theta: the ROM curve (thinned like
-        the data), or with model='tanner' the max height minus Tanner's swell ratio B(N1/(2 tau_w)).
-        One residual vector for a 1-D theta, one row per point (one predict call) for a 2-D theta."""
         theta = np.asarray(theta, float)
         y_obs = np.asarray(self.y_obs_matrix[0], float)
-        if self.model_family == "tanner":       # swell ratio B = max height (R = 1)
+        if self.model_family == "tanner":    
             R = (y_obs.max() - self._tanner_B(np.atleast_2d(theta)[:, 0]))[:, None]
         else:
             Y = np.atleast_2d(self.predict(np.atleast_2d(theta)[:, :self.n_material_params]))
@@ -93,9 +84,9 @@ class LikelihoodMixin:
             residual = self._residuals(theta)
 
         eig = K = None
-        if sigma_bias is not None:            # noise + model bias: C = sigma_n^2 I + sigma_b^2 K'
+        if sigma_bias is not None:      
             x = self.obs_x_coords[:len(residual)]
-            if self._infer_l_bias():          # K' depends on this point's l_bias: no cached decomposition
+            if self._infer_l_bias():          
                 K = self._bias_correlation_matrix(x, theta[n + 2])
             else:
                 eig = self._bias_eigh(x, self.l_bias)
@@ -104,7 +95,7 @@ class LikelihoodMixin:
 
     def log_posterior(self, phi):
         phi = np.asarray(phi, float)
-        if phi.ndim > 1:      # a batch of walkers (emcee vectorize=True, starting points): one predict call
+        if phi.ndim > 1:    
             lp = np.array([self.log_prior(p) for p in phi])
             ok = np.flatnonzero(np.isfinite(lp))
             if ok.size:

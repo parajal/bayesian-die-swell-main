@@ -22,7 +22,7 @@ class Sampler:
         self._print_walkers("Initial walkers", p0, n = nwalkers)
         moves = [(emcee.moves.DEMove(), 0.6), (emcee.moves.DESnookerMove(), 0.2), (emcee.moves.StretchMove(), 0.2)]
         sampler = emcee.EnsembleSampler(nwalkers, ndim, self.log_posterior, moves=moves, vectorize=True)
-        sampler.random_state = np.random.RandomState(self.seed).get_state()   # emcee's own RNG (moves)
+        sampler.random_state = np.random.RandomState(self.seed).get_state() 
 
         nwarm = int(warmup_fraction * nsteps)
         if nwarm:

@@ -1,9 +1,5 @@
-"""Training data and the observed swell curve (with synthetic noise)."""
-
 from pathlib import Path
-
 import numpy as np
-
 
 class DataLoaderMixin:
     """Load the ROM training set and the observed curve; set the sigma_noise prior."""
