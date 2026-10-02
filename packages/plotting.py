@@ -69,7 +69,8 @@ class PlottingMixin:
     def _prior_curves(self, n: int = 5000) -> "list[tuple[np.ndarray, np.ndarray]]":
         """(x, density) for every inferred parameter, in vector order, in the sampler's coordinates.
 
-        material -> uniform (log10 of both with parametrize); sigma_noise/sigma_bias -> exponential.
+        material -> uniform (log10 of both with parametrize); sigma_noise/sigma_bias -> exponential;
+        l_bias (when inferred) -> uniform.
         """
         curves = []
         for lo, hi in self._get_sampling_bounds():                  # material params
@@ -79,9 +80,17 @@ class PlottingMixin:
         for rate in rates:                                          # sigma_noise (+ sigma_bias): exponential
             x = np.linspace(0, 5.0 / rate, n)
             curves.append((x, rate * np.exp(-rate * x)))
+        if self._infer_l_bias():                                    # l_bias: uniform
+            lo, hi = self.l_bias_bounds
+            x = np.linspace(lo, hi, n)
+            curves.append((x, np.full_like(x, 1.0 / (hi - lo))))
         return curves
 
     def plot_prior(self, n: int = 5000) -> None:
+        """Prior densities; the sigma_bias prior is exponential with mean sigma_MLE = RMS(delta) of the MLE fit."""
+        if self._infer_sigma_bias() and self.sigma_bias_prior is None:
+            raise RuntimeError("the sigma_bias prior comes from the MLE fit (mean sigma_MLE = RMS(delta)): "
+                               "call load_data() and build_rom() before plot_prior().")
         curves = self._prior_curves(n)
         fig, axes = plt.subplots(1, len(curves), figsize=(8 * len(curves), 6), squeeze=False)
         axes = axes.ravel()
@@ -93,17 +102,19 @@ class PlottingMixin:
         self._save_current_figure("prior")
         plt.show()
 
-    def plot_trace_all(self, burn_in_ratio: float = 0.6) -> None:
+    def plot_trace_all(self, burn_in_ratio: float | None = None) -> None:
+        """Walker traces; the dashed line is the burn-in run_mcmc discarded (or burn_in_ratio of the chain)."""
         if getattr(self, "chain", None) is None:
             raise RuntimeError("Call run_mcmc() first.")
-        chain = self._to_physical_chain(np.asarray(self.chain, dtype=float))
+        chain = self._to_physical(np.asarray(self.chain, dtype=float))
+        nburn = getattr(self, "nburn", 0) if burn_in_ratio is None else int(burn_in_ratio * chain.shape[0])
         n = chain.shape[2]
         labels = list(self._get_parameter_labels())
         labels += [f"param_{i}" for i in range(len(labels), n)]
         fig, axes = plt.subplots(n, 1, sharex=True, figsize=(9, 2.4 * n), squeeze=False)
         for i, ax in enumerate(axes.ravel()):
             ax.plot(chain[:, :, i], lw=0.7, alpha=0.55)
-            ax.axvline(int(burn_in_ratio * chain.shape[0]), color="black", ls="--", lw=1)
+            ax.axvline(nburn, color="black", ls="--", lw=1)
             ax.set_ylabel(labels[i])
             ax.grid(True, alpha=0.2)
         axes.ravel()[-1].set_xlabel("MCMC step")
@@ -113,7 +124,7 @@ class PlottingMixin:
     def plot_corner(
         self,
         theta_true=None,
-        cred_level: float = 0.95,
+        cred_level: float = 0.90,
         label_size: float = 40,
         physical_only: bool = True,
         show_plot: bool = True,
@@ -197,33 +208,30 @@ class PlottingMixin:
         kwargs.setdefault("physical_only", False)
         self.plot_corner(**kwargs)
 
-    def _bias_correlation_matrix(self, x, l_bias) -> np.ndarray:
-
-        x = np.asarray(x, dtype=float).ravel()
-        constrained = bool(getattr(self, "constrained_model_error", False))
-        Dc = np.asarray(self.bias_gradient_points, float) if constrained else np.empty(0)
-        key = (float(l_bias), constrained, tuple(Dc), x.tobytes())
-        cached = getattr(self, "_bias_corr_cache", None)
-        if cached is not None and cached[0] == key:
-            return cached[1]
-
-        l2 = float(l_bias) ** 2
-        kf = lambda a, b: np.exp(-np.subtract.outer(a, b) ** 2 / (2.0 * l2))
-        K = kf(x, x)
-        if constrained:
-            V = np.zeros(1)                                                   # delta(0)=0
-            C = np.hstack([kf(x, V),                                          # Cov(d(x), d(0))
-                           np.subtract.outer(x, Dc) / l2 * kf(x, Dc)])        # Cov(d(x), d'(Dc))
-            g = np.subtract.outer(V, Dc) / l2 * kf(V, Dc)                     # Cov(d(0), d'(Dc))
-            dd = np.subtract.outer(Dc, Dc)
-            A = np.block([[kf(V, V), g],
-                          [g.T, kf(Dc, Dc) / l2 * (1.0 - dd ** 2 / l2)]])     # Cov(d'(Dc), d'(Dc))
-            A[np.diag_indices_from(A)] += 1e-10
-            K = K - C @ np.linalg.solve(A, C.T)
-
-        K.setflags(write=False)
-        self._bias_corr_cache = (key, K)
-        return K
+    def plot_mle_fit(self) -> None:
+        """Clean FEM curve with the MLE ROM curve fitted to it (left) and the discrepancy
+        delta(x) = y_clean - ROM(theta_MLE) with +/- sigma_MLE = RMS(delta) (right)."""
+        delta = getattr(self, "mle_delta", None)
+        if delta is None:
+            raise RuntimeError("No MLE fit yet: call load_data() and build_rom().")
+        x = np.asarray(self.obs_x_coords, float)
+        y = np.asarray(self.y_obs_matrix_clean[0], float)
+        sig = float(np.sqrt(np.mean(delta ** 2)))
+        fig, (a1, a2) = plt.subplots(1, 2, figsize=(16, 6))
+        a1.scatter(x, y, s=12, color="black", alpha=0.7, label="clean FEM")
+        a1.plot(x, y - delta, color="C3", lw=2, label="MLE ROM")
+        a1.set(xlabel=r"$x$", ylabel=r"$h(x)$")
+        a1.legend(loc="lower right", framealpha=0.9)
+        a1.grid(True, alpha=0.3)
+        a2.plot(x, delta, color="C0", lw=1.5)
+        a2.axhline(0.0, color="black", lw=0.8)
+        for s in (sig, -sig):
+            a2.axhline(s, color="C3", ls="--", lw=1.2)
+        a2.set(xlabel=r"$x$", ylabel=r"$\delta(x)$")
+        a2.grid(True, alpha=0.3)
+        fig.tight_layout()
+        self._save_current_figure("mle_fit")
+        plt.show()
 
     @staticmethod
     def _correlated_normal(rng, corr, sigma) -> np.ndarray:
@@ -260,14 +268,14 @@ class PlottingMixin:
         """Posterior-predictive replicates g(theta) + delta + noise over random posterior draws."""
         samples = self._posterior_samples()
         n_material = len(self._get_parameter_bounds())         # sigma_noise column index
-        rng = np.random.default_rng(0)
+        rng = np.random.default_rng(self.seed)
         n_draws = min(int(nsamples_pred), samples.shape[0])
         draws = samples[rng.choice(samples.shape[0], size=n_draws, replace=False)]
 
-        infer_bias = self._infer_sigma_bias()
+        infer_bias, infer_l = self._infer_sigma_bias(), self._infer_l_bias()
         sn_draws = np.abs(draws[:, n_material])
         sb_draws = np.abs(draws[:, n_material + 1]) if infer_bias else np.zeros(n_draws)
-        corr = self._bias_correlation_matrix(x, self.l_bias) if infer_bias else None
+        corr = self._bias_correlation_matrix(x, self.l_bias) if infer_bias and not infer_l else None
 
         curves = self.predict(draws[:, :n_material])
         if curves.shape[1] != obs.size:
@@ -278,6 +286,8 @@ class PlottingMixin:
         for k in range(n_draws):
             g = curves[k]
             sn, sb = float(sn_draws[k]), float(sb_draws[k])
+            if infer_l:                                     # each draw has its own l_bias
+                corr = self._bias_correlation_matrix(x, float(draws[k, n_material + 2]))
             if not infer_bias or sb <= 0:
                 delta = delta_mean = np.zeros_like(g)
             elif condition_discrepancy:
@@ -296,12 +306,15 @@ class PlottingMixin:
 
     def plot_posterior_predictive(
         self,
-        n_sigma: float = 1.96,
+        n_sigma: float = 1.645,            # 90% band
         nsamples_pred: int = 5000,
         condition_discrepancy: bool = False,
     ) -> None:
         from matplotlib.lines import Line2D
 
+        if self.model_family == "tanner":
+            print("plot_posterior_predictive: no curve model with model='tanner' (max height only); skipped.")
+            return
         obs = self._obs_matrix()[0]
         x = np.asarray(self.obs_x_coords, float)
         mean_pred, pred_lo, pred_hi, diag = self._predictive_summary(

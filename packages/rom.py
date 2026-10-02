@@ -10,8 +10,8 @@ SCALERS = {"minmax": MinMaxScaler, "standard": StandardScaler}
 class ROM:
     """POD basis + GPR from the parameters to the POD coefficients."""
 
-    def __init__(self, scaler="minmax", eps=1e-6, gpr_restarts=100, random_state=42):
-        self.x_scaler, self.eps, self.gpr_restarts, self.random_state = scaler, eps, gpr_restarts, random_state
+    def __init__(self, scaler="minmax", eps=1e-6):
+        self.x_scaler, self.eps = scaler, eps
 
     def train(self, X_train, param_train):
         """Fit the ROM to the curves X_train (one per row) at the parameter rows param_train."""
@@ -22,8 +22,7 @@ class ROM:
         self.scaler = SCALERS[self.x_scaler]() if self.x_scaler else None
         scaled_param = self.scaler.fit_transform(param_train) if self.scaler is not None else param_train
         kernel = ConstantKernel(1.0, (1e-6, 1e6)) * RBF(np.ones(scaled_param.shape[1]), (1e-3, 1e3))
-        gpr = GaussianProcessRegressor(kernel, n_restarts_optimizer=self.gpr_restarts,
-                                       random_state=self.random_state)
+        gpr = GaussianProcessRegressor(kernel, n_restarts_optimizer=100, random_state=self.seed)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", ConvergenceWarning)
             self.model = gpr.fit(scaled_param, (X_train - self.snap_mean) @ self.basis)

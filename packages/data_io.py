@@ -7,8 +7,8 @@ class DataLoaderMixin:
     def load_training_data(self):
         Y = np.loadtxt(self.data_dir / self.filenames_train[0], ndmin=2)
         P = np.loadtxt(self.data_dir / self.filenames_train[1], ndmin=2)[:, :self.n_material_params]
-        if self.parametrize:                   
-            P[:, 0] *= 1.0 - P[:, 1]
+        if self.parametrize:  
+            P[:, 0] = (1.0 - P[:, 1]) * P[:, 0]
         return Y, P
 
     def load_data(self, filename):
@@ -17,20 +17,19 @@ class DataLoaderMixin:
 
         y = np.loadtxt(path, ndmin=2)
         x_full = np.loadtxt(self.infer_dir / "curve4_x.txt")
-        self._curve_size = x_full.size
 
-        self._obs_indices = np.arange(0, x_full.size, self.thin)
+        i0 = int(np.argmin(np.abs(x_full)))
+        self._obs_indices = np.union1d(np.arange(i0, -1, -self.thin), np.arange(i0, x_full.size, self.thin))
         self.y_obs_matrix_clean = y[:, self._obs_indices]
         self.obs_x_coords = x_full[self._obs_indices]
 
         self.max_displacement = self.y_obs_matrix_clean.max() - 1.0
         self.sigma_noise_prior = 1.0 / (0.10 * self.max_displacement)
-        self.sigma_bias_prior = self.sigma_noise_prior if self._infer_sigma_bias() else None
-
         sigma = (self.sigma_noise_percent / 100) * self.max_displacement
         noise = np.random.default_rng(self.seed).normal(0, sigma, self.y_obs_matrix_clean.shape)
         self.sigma_noise_realized = noise.std()
         self.y_obs_matrix = self.y_obs_matrix_clean + noise
+        self._mle_discrepancy()   
 
         info = {
             "folder": self.infer_dir,

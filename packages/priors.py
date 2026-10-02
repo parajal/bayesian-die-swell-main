@@ -16,4 +16,9 @@ class PriorMixin:
         if np.any(sigmas <= 0) or not self._implied_in_bounds(theta[:n]):
             return -np.inf
         logp = -np.log(hi - lo).sum() + np.sum(np.log(rates) - rates * sigmas)
+        if self._infer_l_bias():             
+            l_lo, l_hi = self.l_bias_bounds
+            if not l_lo <= theta[n + k] <= l_hi:
+                return -np.inf
+            logp -= np.log(l_hi - l_lo)
         return float(logp)
