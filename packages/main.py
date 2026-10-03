@@ -52,7 +52,7 @@ class ROMCurve4BayesianInference(ROM, DataLoaderMixin, PriorMixin, LikelihoodMix
                  constrained_model_error=False,
                  thin=1, model="oldroyd", radius=1.0,
                  parametrize=False, seed=42, theta=None, U_avg=None, tanner_bounds=(0.01, 5.0),
-                 l_bias_bounds=(0.1, 1.0)):
+                 l_bias_bounds=(0.1, 1.2)):
 
         self.swell_root = self.infer_dir = Path(swell_root or Path.cwd()).expanduser().resolve()        
         self.train_data_rels = train_data_rels

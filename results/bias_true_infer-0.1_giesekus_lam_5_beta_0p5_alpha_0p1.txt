@@ -1,22 +1,24 @@
-# data         : datas/oldroyd-rom2/infer-0.1/giesekus_lam_5_beta_0p5_alpha_0p1
-# fitted model : oldroyd, parametrize=False, sigma_bias=True, l_bias inferred U(0.1, 1.0), noise 2 %
+# data         : datas/oldroyd-rom1/infer-0.1/giesekus_lam_5_beta_0p5_alpha_0p1
+# fitted model : oldroyd, parametrize=False, sigma_bias=True, l_bias inferred U(0.1, 1.2), noise 2 %
 #
 # true parameters
-# (not given)
+lambda        5
+beta          0.5
+alpha         0.1
 #
 # inferred parameters
 # name                 mean     Rhat      ci90_low     ci90_high
-lambda           2.8447e+00    1.002    2.7548e+00    2.9246e+00
-beta             5.4321e-01    1.002    5.2178e-01    5.6743e-01
-sigma_noise      3.4808e-03    1.001    3.1806e-03    3.8216e-03
-sigma_bias       2.6961e-04    1.004    1.7050e-05    7.4596e-04
-l_bias           5.6527e-01    1.002    1.5306e-01    9.5369e-01
+lambda           2.5095e+00    1.007    2.3061e+00    2.7678e+00
+beta             4.4379e-01    1.007    3.0644e-01    5.6689e-01
+sigma_noise      3.7369e-03    1.003    3.3773e-03    4.1305e-03
+sigma_bias       2.6280e-03    1.006    8.6875e-04    5.1118e-03
+l_bias           7.4891e-01    1.004    3.4516e-01    1.0806e+00
 #
 # derived quantities at U_avg = 0.1  (S_R = N1 / tau_w = 2 (1 - beta) lambda gammadot_w, N1 = S_R tau_w, tau_w = R |dp/dx| / 2)
 # name                 mean      ci90_low     ci90_high
-E[N1]            3.5200e+00    3.4284e+00    3.5750e+00
-E[S_R]           1.0390e+00    1.0119e+00    1.0552e+00
+E[N1]            3.7708e-01    3.2621e-01    4.3638e-01
+E[S_R]           1.1078e+00    9.5834e-01    1.2820e+00
 gammadot_w       4.0000e-01    # 4 U_avg / R (4 U_avg / R = 0.4)
-N1_true          3.9696e+00    # FEM wall N1 from curve5_0002.txt, mean over -3 <= x <= -1
-S_R_true         1.1717e+00    # N1_true / tau_w, tau_w = R |dp/dx| / 2 from pressure_drop.txt
-gammadot_w_true  4.2064e-01    # FEM wall shear rate from curve5_0002.txt, mean over -3 <= x <= -1
+N1_true          3.9672e-01    # FEM wall N1 from curve5_0002.txt, mean over -3 <= x <= -1
+S_R_true         1.1655e+00    # N1_true / tau_w, tau_w = R |dp/dx| / 2 from pressure_drop.txt
+gammadot_w_true  4.2080e-01    # FEM wall shear rate from curve5_0002.txt, mean over -3 <= x <= -1
