@@ -1,0 +1,23 @@
+# data         : datas/oldroyd-rom-m3/infer-0.2/giesekus_lam_5_beta_0p5_alpha_0p05
+# fitted model : ptt, parametrize=False, sigma_bias=False, noise 2 %
+#
+# true parameters
+lambda        5
+beta          0.5
+alpha         0.05
+#
+# inferred parameters
+# name                 mean     Rhat      ci90_low     ci90_high
+lambda           4.9079e+00    1.003    4.0828e+00    5.8131e+00
+beta             5.0990e-01    1.003    4.9137e-01    5.2930e-01
+epsilon          6.0444e-02    1.003    4.1763e-02    7.9041e-02
+sigma_noise      7.0103e-03    1.004    6.5391e-03    7.5225e-03
+#
+# derived quantities at U_avg = 0.2  (S_R = N1 / tau_w = 2 (1 - beta) lambda gammadot_w, N1 = S_R tau_w, tau_w = R |dp/dx| / 2)
+# name                 mean      ci90_low     ci90_high
+E[N1]            1.1042e+00    1.0095e+00    1.2107e+00
+E[S_R]           1.7162e+00    1.6551e+00    1.7792e+00
+gammadot_w       8.0000e-01    # 4 U_avg / R (4 U_avg / R = 0.8)
+N1_true          1.1516e+00    # FEM wall N1 from curve5_0002.txt, mean over -3 <= x <= -1
+S_R_true         1.8059e+00    # N1_true / tau_w, tau_w = R |dp/dx| / 2 from pressure_drop.txt
+gammadot_w_true  8.4668e-01    # FEM wall shear rate from curve5_0002.txt, mean over -3 <= x <= -1
