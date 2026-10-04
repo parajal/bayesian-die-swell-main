@@ -31,14 +31,23 @@ class PlottingMixin:
             raise RuntimeError("Call run_mcmc() first.")
         return np.asarray(self.samples, dtype=float)
 
+    _plot_dir = None   # set by save_plots(): figures go to results/<run>/ and are not shown
+
     def _save_current_figure(self, filename: str) -> None:
-        """Save as ``<infer_dir>/<filename>_noise_<pct>.pdf``."""
-        out = Path(self.infer_dir)
+        """Save as ``<infer_dir>/<filename>_noise_<pct>.pdf`` (``results/<run>/`` during save_plots)."""
+        out = Path(self._plot_dir or self.infer_dir)
         out.mkdir(parents=True, exist_ok=True)
         fig = plt.gcf()
-        fig.savefig(out / f"{filename}_noise_{self.sigma_noise_percent:g}.pdf", dpi=300)
+        fig.savefig(out / f"{filename}_noise_{self.sigma_noise_percent:g}.pdf", dpi=300, bbox_inches="tight")
 
-    def _finish_curve(self, ax, y, name, handles=None, labels=None) -> None:
+    def _show(self) -> None:
+        """Show the current figure, or close it while save_plots() is writing files."""
+        if self._plot_dir is None:
+            plt.show()
+        else:
+            plt.close(plt.gcf())
+
+    def _finish_curve(self, ax, y, name, handles=None, labels=None, legend=True) -> None:
         """Shared h(x) styling (data-driven x, y from 1, 3 ticks each), legend, save, show."""
         x = np.asarray(self.obs_x_coords, float)
         xlo, xhi = float(x.min()), float(x.max())
@@ -47,9 +56,10 @@ class PlottingMixin:
                xlim=(xlo, xhi), xticks=np.linspace(xlo, xhi, 3),
                ylim=(1, ytop), yticks=np.linspace(1, ytop, 3))
         ax.grid(True, alpha=0.3)
-        ax.legend(*(() if handles is None else (handles, labels)), loc="lower right", framealpha=0.9)
+        if legend:
+            ax.legend(*(() if handles is None else (handles, labels)), loc="lower right", framealpha=0.9)
         self._save_current_figure(name)
-        plt.show()
+        self._show()
 
     def plot_data(self) -> None:
         """Noisy observations (points) over the noise-free curve (line)."""
@@ -64,7 +74,7 @@ class PlottingMixin:
         for i, row in enumerate(y):
             ax.scatter(x, row, s=16, alpha=0.8, color=f"C{i}",
                        label="noisy data" if i == 0 else "_nolegend_")
-        self._finish_curve(ax, y, "data")
+        self._finish_curve(ax, y, "data", legend=False)
 
     def _prior_curves(self, n: int = 5000) -> "list[tuple[np.ndarray, np.ndarray]]":
         """(x, density) for every inferred parameter, in vector order, in the sampler's coordinates.
@@ -76,7 +86,7 @@ class PlottingMixin:
         for lo, hi in self._get_sampling_bounds():                  # material params
             x = np.linspace(lo, hi, n)
             curves.append((x, np.full_like(x, 1.0 / (hi - lo))))
-        rates = [self.sigma_noise_prior] + [self.sigma_bias_prior] * self._infer_sigma_bias()
+        rates = self._sigma_rates()
         for rate in rates:                                          # sigma_noise (+ sigma_bias): exponential
             x = np.linspace(0, 5.0 / rate, n)
             curves.append((x, rate * np.exp(-rate * x)))
@@ -85,6 +95,23 @@ class PlottingMixin:
             x = np.linspace(lo, hi, n)
             curves.append((x, np.full_like(x, 1.0 / (hi - lo))))
         return curves
+
+    def _prior_density(self, i: int, x: np.ndarray) -> np.ndarray:
+        """Prior density of parameter i (vector order) at x, in physical units: uniform (log-uniform
+        with parametrize) material parameters, exponential sigma_noise / sigma_bias, uniform l_bias."""
+        x = np.asarray(x, float)
+        bounds, rates = self._get_parameter_bounds(), self._sigma_rates()
+        n = len(bounds)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            if i < n:
+                lo, hi = bounds[i]
+                dens = 1.0 / (x * np.log(hi / lo)) if i in self._log10_params() else np.full_like(x, 1.0 / (hi - lo))
+                return np.where((x >= lo) & (x <= hi), dens, 0.0)
+            if i < n + len(rates):
+                rate = rates[i - n]
+                return np.where(x >= 0, rate * np.exp(-rate * x), 0.0)
+        lo, hi = self.l_bias_bounds
+        return np.where((x >= lo) & (x <= hi), 1.0 / (hi - lo), 0.0)
 
     def plot_prior(self, n: int = 5000) -> None:
         """Prior densities; the sigma_bias prior is exponential with mean sigma_MLE = RMS(delta) of the MLE fit."""
@@ -100,7 +127,7 @@ class PlottingMixin:
             ax.grid(True, alpha=0.25)
         axes[0].set_ylabel("Prior density")
         self._save_current_figure("prior")
-        plt.show()
+        self._show()
 
     def plot_trace_all(self, burn_in_ratio: float | None = None) -> None:
         """Walker traces; the dashed line is the burn-in run_mcmc discarded (or burn_in_ratio of the chain)."""
@@ -119,7 +146,7 @@ class PlottingMixin:
             ax.grid(True, alpha=0.2)
         axes.ravel()[-1].set_xlabel("MCMC step")
         self._save_current_figure("trace_all")
-        plt.show()
+        self._show()
 
     def plot_corner(
         self,
@@ -128,8 +155,10 @@ class PlottingMixin:
         label_size: float = 40,
         physical_only: bool = True,
         show_plot: bool = True,
-        true_param: bool = True,
+        true_param: bool = False,
     ) -> None:
+        """Corner plot of the posterior with the prior of every parameter (red) on the diagonal and the
+        cred_level credible interval (dotted); the ground truth only with true_param=True."""
         try:
             import corner
         except ImportError as exc:
@@ -180,16 +209,8 @@ class PlottingMixin:
                 xhi = max(xhi, truths[i] + pad)
                 for j in range(i, ndim):
                     axes[j, i].set_xlim(xlo, xhi)
-            if i < n_phys:                                   # prior density in physical units
-                lo, hi = bounds[i]
-                xs = np.linspace(xlo, xhi, 400)
-                inside = (xs >= lo) & (xs <= hi)
-                dens = np.zeros_like(xs)
-                if i in self._log10_params():                # log-uniform: 1 / (x ln(hi/lo))
-                    dens[inside] = 1.0 / (xs[inside] * np.log(hi / lo))
-                else:
-                    dens[inside] = 1.0 / (hi - lo)
-                ax.plot(xs, dens, color="red", lw=1.5)
+            xs = np.linspace(xlo, xhi, 400)                  # prior density in physical units
+            ax.plot(xs, self._prior_density(i, xs), color="red", lw=1.5)
             for c in np.percentile(samples[:, i], [q_lo, q_hi]):
                 ax.axvline(c, color="black", ls=":", lw=1.5)
             if truths[i] is not None:
@@ -199,7 +220,7 @@ class PlottingMixin:
 
         self._save_current_figure("corner_physical" if physical_only else "corner_physical_all")
         if show_plot:
-            plt.show()
+            self._show()
         else:
             plt.close(fig)
 
@@ -207,6 +228,64 @@ class PlottingMixin:
         """Corner plot including the noise/bias hyperparameters."""
         kwargs.setdefault("physical_only", False)
         self.plot_corner(**kwargs)
+
+    def plot_posterior(self, cred_level: float = 0.90, bins: int = 60, true_param: bool = False) -> None:
+        """Marginal posterior of every inferred parameter (physical units): histogram, posterior mean
+        (solid), cred_level credible interval (dotted), the prior (red) and, with true_param=True, the true value (dashed)
+        when known (true_theta for the material parameters, the realized noise level for sigma_noise)."""
+        samples = self._posterior_samples()
+        names = self._get_parameter_labels(latex=False)
+        truths = {}
+        if true_param:
+            truths = dict(zip(names, getattr(self, "true_theta", None) or ()))
+            if getattr(self, "sigma_noise_realized", None) is not None:
+                truths["sigma_noise"] = float(self.sigma_noise_realized)
+        q = [50 * (1 - cred_level), 50 * (1 + cred_level)]
+
+        fig, axes = plt.subplots(1, len(names), figsize=(8 * len(names), 6), squeeze=False)
+        for i, (ax, s, name, label) in enumerate(zip(axes.ravel(), samples.T, names, self._get_parameter_labels())):
+            ax.hist(s, bins=bins, density=True, histtype="stepfilled", color="steelblue", alpha=0.3)
+            ax.hist(s, bins=bins, density=True, histtype="step", color="steelblue", lw=1.5)
+            ax.axvline(s.mean(), color="black", lw=2, label="mean")
+            lo, hi = np.percentile(s, q)
+            ax.axvline(lo, color="black", ls=":", lw=1.5, label=rf"{round(100 * cred_level)}\% CI")
+            ax.axvline(hi, color="black", ls=":", lw=1.5)
+            if name in truths:
+                ax.axvline(truths[name], color="C2", ls="--", lw=2, label="true")
+            ylim = ax.get_ylim()                         # prior over the shown range, posterior scale kept
+            xs = np.linspace(*ax.get_xlim(), 400)
+            ax.plot(xs, self._prior_density(i, xs), color="red", lw=1.5, label="prior")
+            ax.set_ylim(ylim)
+            ax.set(xlabel=label)
+            ax.grid(True, alpha=0.25)
+        axes[0, 0].set_ylabel("Posterior density")
+        fig.tight_layout()
+        self._save_current_figure("posterior")
+        self._show()
+
+    def save_plots(self) -> Path:
+        """Save every available plot as PDF into results/<run>/, without showing them; <run> is the
+        results-file name with l_bias and constraint added, e.g.
+        bias_true_l_bias_infer_constrained_infer-0.1_giesekus_lam_5_beta_0p5_alpha_0p2."""
+        out = Path(self.swell_root) / "results" / self._results_stem(with_l_bias=True)
+        plots = [self.plot_data, self.plot_prior]
+        if getattr(self, "mle_delta", None) is not None:
+            plots.append(self.plot_mle_fit)
+        if getattr(self, "samples", None) is not None:
+            plots += [self.plot_trace_all, self.plot_posterior, self.plot_corner, self.plot_corner_all,
+                      self.plot_posterior_predictive]
+        self._plot_dir = out
+        try:
+            for plot in plots:
+                try:
+                    plot()
+                except Exception as exc:          # one failing plot must not stop the others
+                    plt.close("all")
+                    print(f"save_plots: {plot.__name__} skipped ({exc})")
+        finally:
+            self._plot_dir = None
+        print(f"saved plots to {out}")
+        return out
 
     def plot_mle_fit(self) -> None:
         """Clean FEM curve with the MLE ROM curve fitted to it (left) and the discrepancy
@@ -231,7 +310,7 @@ class PlottingMixin:
         a2.grid(True, alpha=0.3)
         fig.tight_layout()
         self._save_current_figure("mle_fit")
-        plt.show()
+        self._show()
 
     @staticmethod
     def _correlated_normal(rng, corr, sigma) -> np.ndarray:

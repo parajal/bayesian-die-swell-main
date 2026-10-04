@@ -60,7 +60,7 @@ class Sampler:
         n = pool_factor * nwalkers
         if center is None:    
             lo, hi = np.asarray(self._get_sampling_bounds(), float).T
-            rates = np.array([self.sigma_noise_prior] + [self.sigma_bias_prior] * self._infer_sigma_bias())
+            rates = np.array(self._sigma_rates())
             pool = np.hstack([rng.uniform(lo, hi, size=(n, len(lo))),
                               rng.exponential(1 / rates, size=(n, len(rates)))]
                              + [rng.uniform(*self.l_bias_bounds, size=(n, 1))] * self._infer_l_bias())
@@ -88,15 +88,28 @@ class Sampler:
                   f"{r['ci_low']:>15.4e}{r['ci_high']:>15.4e}")
         return results
 
+    def _results_stem(self, with_l_bias=False):
+        """Run name of the results file, e.g. bias_true_infer-0.1_giesekus_lam_5_beta_0p5_alpha_0p2;
+        the tanner_ prefix keeps Tanner and ROM runs on the same data apart. with_l_bias (plot folder)
+        adds l_bias_infer, l_bias_none (no bias term) or the fixed value, e.g. l_bias_0p51, and
+        constrained / unconstrained (constrained_model_error)."""
+        data = Path(self.infer_dir)
+        prefix = "tanner_" if self.model_family == "tanner" else ""
+        bias = f"bias_{str(bool(self.sigma_bias)).lower()}"
+        if with_l_bias:
+            l_bias = ("infer" if self._infer_l_bias() else "none" if self.l_bias is None
+                      else f"{self.l_bias:g}".replace(".", "p"))
+            constrained = "constrained" if getattr(self, "constrained_model_error", False) else "unconstrained"
+            bias += f"_l_bias_{l_bias}_{constrained}"
+        return f"{prefix}{bias}_{data.parent.name}_{data.name}"
+
     def save_results(self):
 
         root, data = Path(self.swell_root), Path(self.infer_dir)
         out_dir = root / "results"
         out_dir.mkdir(parents=True, exist_ok=True)
-        bias = str(bool(self.sigma_bias)).lower()
         tanner = self.model_family == "tanner"
-        prefix = "tanner_" if tanner else ""          # keeps Tanner and ROM results of the same data apart
-        out = out_dir / f"{prefix}bias_{bias}_{data.parent.name}_{data.name}.txt"
+        out = out_dir / f"{self._results_stem()}.txt"
         try:
             data_rel = data.relative_to(root)
         except ValueError:

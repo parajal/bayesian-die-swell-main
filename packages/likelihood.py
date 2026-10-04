@@ -64,7 +64,7 @@ class LikelihoodMixin:
         theta = np.asarray(theta, float)
         y_obs = np.asarray(self.y_obs_matrix[0], float)
         if self.model_family == "tanner":    
-            R = (y_obs.max() - self._tanner_B(np.atleast_2d(theta)[:, 0]))[:, None]
+            R = (self.h_max_obs - self._tanner_B(np.atleast_2d(theta)[:, 0]))[:, None]
         else:
             Y = np.atleast_2d(self.predict(np.atleast_2d(theta)[:, :self.n_material_params]))
             if Y.shape[1] > y_obs.size:
@@ -76,7 +76,7 @@ class LikelihoodMixin:
         """Log likelihood of one point; residual can be passed in when already computed."""
         theta = self._to_physical(phi)
         n = self.n_material_params
-        sigma_noise = theta[n]
+        sigma_noise = self.sigma_noise_known if self.model_family == "tanner" else theta[n]
         sigma_bias = theta[n + 1] if self._infer_sigma_bias() else None
         if sigma_noise <= 0 or (sigma_bias is not None and sigma_bias <= 0):
             return -np.inf

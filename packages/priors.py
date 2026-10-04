@@ -6,8 +6,7 @@ class PriorMixin:
     def log_prior(self, phi):
         phi = np.asarray(phi, float)
         lo, hi = np.asarray(self._get_sampling_bounds(), float).T
-        rates = np.array([self.sigma_noise_prior]
-                         + [self.sigma_bias_prior] * self._infer_sigma_bias())
+        rates = np.array(self._sigma_rates())
         n, k = len(lo), len(rates)
         if not np.isfinite(phi).all() or np.any((phi[:n] < lo) | (phi[:n] > hi)):
             return -np.inf

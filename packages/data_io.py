@@ -27,4 +27,9 @@ class DataLoaderMixin:
         noise = rng.normal(0, sigma_noise, self.y_obs_matrix_clean.shape)
         self.sigma_noise_realized = noise.std()
         self.y_obs_matrix = self.y_obs_matrix_clean + noise
+        if self.model_family == "tanner":  
+            if sigma_noise <= 0:
+                raise ValueError("model='tanner' needs sigma_noise_percent > 0 (sigma_noise is fixed to it).")
+            self.h_max_obs = y.max() + rng.normal(0, sigma_noise)
+            self.sigma_noise_known = sigma_noise
         self._mle_discrepancy()

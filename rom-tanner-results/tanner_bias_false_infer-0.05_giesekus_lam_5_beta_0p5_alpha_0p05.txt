@@ -1,0 +1,19 @@
+# data         : datas/oldroyd-rom1/infer-0.05/giesekus_lam_5_beta_0p5_alpha_0p05
+# fitted model : tanner, B = 0.13 + [1 + (N1/(2 tau_w))^2 / 2]^(1/6) = max height, sigma_bias=False, noise 2 %
+#
+# true parameters
+lambda        5
+beta          0.5
+alpha         0.05
+#
+# inferred parameters
+# name                 mean     Rhat      ci90_low     ci90_high
+N1_2tau_w        7.6524e-01    1.001    7.1158e-01    8.1763e-01
+#
+# derived quantities at U_avg = 0.05  (S_R = N1 / tau_w = 2 N1/(2 tau_w) (Tanner), N1 = S_R tau_w, tau_w = R |dp/dx| / 2)
+# name                 mean      ci90_low     ci90_high
+E[N1]            2.9528e-01    2.7457e-01    3.1549e-01
+E[S_R]           1.5305e+00    1.4232e+00    1.6353e+00
+N1_true          1.7006e-01    # FEM wall N1 from curve5_0002.txt, mean over -3 <= x <= -1
+S_R_true         8.8143e-01    # N1_true / tau_w, tau_w = R |dp/dx| / 2 from pressure_drop.txt
+gammadot_w_true  2.0353e-01    # FEM wall shear rate from curve5_0002.txt, mean over -3 <= x <= -1

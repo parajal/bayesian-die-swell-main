@@ -2,6 +2,7 @@
 E[N1] / E[S_R] with credible intervals, and the FEM reference (true) wall values."""
 
 import importlib
+import re
 import sys
 from pathlib import Path
 
@@ -13,6 +14,9 @@ _N1_FUNCS = {
     "giesekus": ("compute_n1_giesekus_function",  "compute_n1_giesekus",  {"alpha": "alpha"}),
     "ptt":      ("compute_n1_ptt_function",       "compute_n1_ptt",       {"epsilon": "eps"}),
 }
+# Default helper options per family, overridable through compute_N1(**rheo_kwargs): the PTT training runs
+# use TFEM model = 5, the linear-factor PTT (model = 6 is the exponential one: compute_N1(ptt="exponential")).
+_N1_DEFAULTS = {"ptt": {"ptt": "linear"}}
 
 
 class N1Mixin:
@@ -50,12 +54,39 @@ class N1Mixin:
         dpdx = self._pressure_drop_dpdx()
         return None if dpdx is None else 0.5 * r * abs(dpdx)
 
+    def _wall_shear_rate(self, u_avg, r):
+        """(gammadot_w, source). rabinowitsch_correction=False: the Oldroyd-B (Newtonian-profile) value
+        4 U_avg / R. True: the Rabinowitsch-Mooney value (3n' + 1) / (4n') 4 U_avg / R, with
+        n' = dln tau_w / dln(4 U_avg / R) from the flow curve of the same fluid: tau_w = R |dp/dx| / 2 of
+        every folder <root>/*/<observation folder name> with pressure_drop.txt, U_avg from its input.txt
+        (log-log quadratic fit, linear with two flow rates)."""
+        nominal = 4.0 * u_avg / r
+        if not getattr(self, "rabinowitsch_correction", False):
+            return nominal, "4 U_avg / R"
+        tau = {}
+        name = Path(self.infer_dir).name
+        for d in Path(self.infer_dir).parent.parent.glob(f"*/{name}"):
+            f, inp = d / "pressure_drop.txt", d / "input.txt"
+            if f.is_file() and inp.is_file():
+                u = re.search(r"^\s*U_avg\s*=\s*([-+0-9.eEdD]+)", inp.read_text(), re.M)
+                if u:
+                    tau[float(u.group(1).replace("d", "e"))] = 0.5 * r * abs(float(np.loadtxt(f).ravel()[0]))
+        if len(tau) < 2:
+            raise ValueError(f"rabinowitsch_correction needs pressure_drop.txt at two or more flow rates in "
+                             f"{Path(self.infer_dir).parent.parent}/*/{name}; found {sorted(tau)}")
+        U = np.array(sorted(tau))
+        c = np.polyfit(np.log(4.0 * U / r), np.log([tau[u] for u in U]), min(2, len(U) - 1))
+        n = float(np.polyval(np.polyder(c), np.log(nominal)))
+        return nominal * (3.0 * n + 1.0) / (4.0 * n), \
+            f"Rabinowitsch, n' = {n:.4f} from U_avg = {', '.join(f'{u:g}' for u in U)}"
+
     def compute_N1(self, radius=None, n_expectation=500, **rheo_kwargs):
         """E[N1] and E[S_R = N1 / tau_w] with 90% credible intervals at the U_avg given to the
         constructor. Oldroyd-B: S_R = 2 (1 - beta) lambda gammadot_w and
-        N1 = 2 (1 - beta) lambda tau_w gammadot_w, with tau_w = R |dp/dx| / 2 (pressure_drop.txt)
-        and the Oldroyd-B (Newtonian-profile) wall shear rate gammadot_w = 4 U_avg / R.
-        model='tanner': S_R = 2 N1/(2 tau_w) and N1 = S_R tau_w. Giesekus / PTT: compute_n1_* helpers."""
+        N1 = 2 (1 - beta) lambda tau_w gammadot_w, with tau_w = R |dp/dx| / 2 (pressure_drop.txt);
+        gammadot_w is 4 U_avg / R, or its Rabinowitsch correction with rabinowitsch_correction=True
+        (see _wall_shear_rate). model='tanner': S_R = 2 N1/(2 tau_w) and N1 = S_R tau_w.
+        Giesekus / PTT: the compute_n1_* helpers in steady shear at gammadot_w."""
         if self.U_avg is None:
             raise ValueError("compute_N1 needs U_avg: pass U_avg=... to ROMCurve4BayesianInference.")
         u_avg, r = self.U_avg, float(self.radius if radius is None else radius)
@@ -74,8 +105,8 @@ class N1Mixin:
         elif family == "oldroyd":
             if tau_w is None:
                 raise FileNotFoundError(f"compute_N1 needs pressure_drop.txt in {self.infer_dir}")
-            rate, rate_src = 4.0 * u_avg / r, "4 U_avg / R"
-            print(f"tau_w = R|dp/dx|/2 = {tau_w:.6g}, gammadot_w = 4 U_avg / R = {rate:.6g}")
+            rate, rate_src = self._wall_shear_rate(u_avg, r)
+            print(f"tau_w = R|dp/dx|/2 = {tau_w:.6g}, gammadot_w = {rate:.6g} ({rate_src})")
             theta1 = S[:, 0] if self.parametrize else (1.0 - S[:, 1]) * S[:, 0]
             sr_s = 2.0 * theta1 * rate                # S_R = N1 / tau_w = 2 (1 - beta) lambda gammadot_w
             n1s = sr_s * tau_w                        # N1 = 2 (1 - beta) lambda tau_w gammadot_w
@@ -87,17 +118,23 @@ class N1Mixin:
             draws = S[np.random.default_rng(self.seed).choice(S.shape[0], size=k, replace=False), :len(names)]
             module, func, extra = _N1_FUNCS[family]
             fn = self._load_n1_function(module, func)
+            gd_w, gd_src = self._wall_shear_rate(u_avg, r)
+            print(f"steady shear ({module}) at gammadot_w = {gd_w:.6g} ({gd_src})")
             n1s, tws, rates = (np.empty(k) for _ in range(3))
             for j, row in enumerate(draws):
                 p = dict(zip(names, map(float, row)))
-                o = fn(U_avg=u_avg, radius=r, lam=p["lambda"], beta=p["beta"]
-                       **{kw: p[key] for key, kw in extra.items()}, **rheo_kwargs)
+                if self.parametrize:   # (theta1, theta2, theta3) -> (lambda, beta, alpha / epsilon)
+                    p = {"lambda": p["theta1"] / (1.0 - p["theta2"]), "beta": p["theta2"],
+                         **{key: p["theta3"] for key in extra}}
+                o = fn(rates=gd_w, lam=p["lambda"], beta=p["beta"],
+                       **{kw: p[key] for key, kw in extra.items()},
+                       **{**_N1_DEFAULTS.get(family, {}), **rheo_kwargs})
                 rates[j] = float(np.atleast_1d(np.asarray(o["rates"], float))[0])
                 n1s[j] = float(np.atleast_1d(np.asarray(o["N1"], float))[0])
                 tws[j] = float(np.atleast_1d(np.asarray(o.get("tau_xy", rates[j]), float))[0])
             with np.errstate(divide="ignore", invalid="ignore"):
                 sr_s = np.where(tws != 0, n1s / tws, np.nan)
-            rate, rate_src, tw_mean = float(np.mean(rates)), f"{module}", float(np.mean(tws))
+            rate, rate_src, tw_mean = float(np.mean(rates)), gd_src, float(np.mean(tws))
 
         En1, sd, ci = float(n1s.mean()), float(n1s.std(ddof=1)), np.percentile(n1s, [5.0, 95.0])
         sr_mean, sr_sd = float(np.nanmean(sr_s)), float(np.nanstd(sr_s, ddof=1))
